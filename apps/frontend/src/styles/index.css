@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #app { height: 100%; }
+  body { @apply font-sans text-[15px] text-brand-black bg-[#0f0f10]; }
+}

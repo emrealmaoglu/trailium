@@ -1,0 +1,19 @@
+/* Basit yüzey & yazı renkleri */
+:root {
+  --surface: #f7f7fb; /* ana arka plan */
+}
+
+html, body, #app {
+  height: 100%;
+}
+
+body {
+  background: var(--surface);
+  font-family: 'Poppins', ui-sans-serif, system-ui, Arial, sans-serif;
+}
+
+/* Yardımcı sınıflar */
+.text-title    { color: #0f1720; }   /* brand.black  */
+.text-subtitle { color: #5d6675; }   /* brand.gray   */
+
+
