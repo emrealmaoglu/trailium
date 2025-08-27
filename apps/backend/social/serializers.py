@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Post, Comment, Like
+
+from .models import Album, Comment, Follow, Photo, Post
 
 
 class AuthorSerializer(serializers.Serializer):
@@ -47,3 +48,36 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         fields = ["body"]
 
 
+class PhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Photo
+        fields = ["id", "title", "url", "thumbnail_url", "metadata", "created_at"]
+
+
+class PhotoCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Photo
+        fields = ["title", "url", "thumbnail_url", "metadata"]
+
+
+class AlbumSerializer(serializers.ModelSerializer):
+    photos = PhotoSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Album
+        fields = ["id", "title", "is_published", "visibility", "created_at", "photos"]
+
+
+class AlbumCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Album
+        fields = ["title", "is_published", "visibility"]
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    follower = AuthorSerializer(read_only=True)
+    followed = AuthorSerializer(read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = ["id", "follower", "followed", "status", "created_at"]

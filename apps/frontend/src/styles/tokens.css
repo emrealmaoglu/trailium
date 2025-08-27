@@ -32,8 +32,8 @@
   --c-accent: var(--brand-purple);
 }
 
-/* dark theme overrides */
-:root.theme-dark {
+/* dark theme overrides (applied when documentElement has .dark) */
+:root.dark {
   --c-bg: #111315;
   --c-surface: #14171a;
   --c-surface-2: #171a1e;
@@ -42,5 +42,3 @@
   --c-border: #2a2f37;
   --c-card: #161a1f;
 }
-
-

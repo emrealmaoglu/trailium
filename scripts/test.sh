@@ -80,4 +80,3 @@ COUNT=$(jq -r .count /tmp/u2lists.json 2>/dev/null || echo "")
 [[ "$HTTP" == "200" && ( -z "$COUNT" || "$COUNT" == "0" ) ]] && pass "ownership isolation" || fail "ownership isolation ($HTTP/$COUNT)"
 
 echo -e "\nDone."
-

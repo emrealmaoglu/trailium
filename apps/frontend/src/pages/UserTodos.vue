@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+import { json } from '@/lib/http'
 
 const loading = ref(true)
 const errorMsg = ref('')
@@ -14,9 +13,7 @@ async function fetchLists() {
   loading.value = true
   errorMsg.value = ''
   try {
-    const res = await fetch(`${API_BASE}/api/todos/lists/`, { credentials: 'include' })
-    if (!res.ok) throw new Error(`Load failed: ${res.status}`)
-    const payload = await res.json()
+    const payload = await json('/api/todos/lists/')
     const data = Array.isArray(payload) ? payload : payload.results || []
     lists.value = data
     if (lists.value.length > 0) selectedListId.value = lists.value[0].id
@@ -30,31 +27,21 @@ async function fetchLists() {
 
 async function toggleItem(item) {
   try {
-    const res = await fetch(`${API_BASE}/api/todos/items/${item.id}/toggle-done/`, { method: 'POST', credentials: 'include' })
-    if (!res.ok) throw new Error('Toggle failed')
-    const updated = await res.json()
-    // merge back into state
+    const updated = await json(`/api/todos/items/${item.id}/toggle-done/`, { method: 'POST' })
     const list = selectedList.value
     const idx = list.items.findIndex(i => i.id === item.id)
     if (idx !== -1) list.items[idx] = updated
-    // refresh list to get recalculated progress
     await refreshSelectedList()
   } catch (e) {
-    // noop for now; could show toast
   }
 }
 
 async function toggleSub(sub) {
   try {
-    const res = await fetch(`${API_BASE}/api/todos/subitems/${sub.id}/`, {
+    const updated = await json(`/api/todos/subitems/${sub.id}/`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ is_done: !sub.is_done })
     })
-    if (!res.ok) throw new Error('Toggle failed')
-    const updated = await res.json()
-    // merge back into state
     const list = selectedList.value
     for (const it of list.items) {
       const sidx = it.subitems.findIndex(s => s.id === sub.id)
@@ -69,12 +56,9 @@ async function toggleSub(sub) {
 
 async function refreshSelectedList() {
   if (!selectedListId.value) return
-  const res = await fetch(`${API_BASE}/api/todos/lists/${selectedListId.value}/`, { credentials: 'include' })
-  if (res.ok) {
-    const data = await res.json()
-    const idx = lists.value.findIndex(l => l.id === selectedListId.value)
-    if (idx !== -1) lists.value[idx] = data
-  }
+  const data = await json(`/api/todos/lists/${selectedListId.value}/`)
+  const idx = lists.value.findIndex(l => l.id === selectedListId.value)
+  if (idx !== -1) lists.value[idx] = data
 }
 
 onMounted(() => {
@@ -132,5 +116,3 @@ onMounted(() => {
     </template>
   </div>
 </template>
-
-

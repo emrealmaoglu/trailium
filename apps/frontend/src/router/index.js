@@ -1,76 +1,118 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import AuthLayout from '@/layouts/AuthLayout.vue'
-import AppShell from '@/layouts/AppShell.vue'
-
-const Login = () => import('../pages/Login.vue')
-const Register = () => import('../pages/Register.vue')
-const Users = () => import('../pages/Users.vue')
-const UserTodos = () => import('../pages/UserTodos.vue')
-const Todos = () => import('../pages/Todos.vue')
-const Posts = () => import('../pages/Posts.vue')
-const Albums = () => import('../pages/Albums.vue')
+import { useSessionStore } from '@/stores/session'
 
 const routes = [
   {
-    path: '/auth',
-    component: AuthLayout,
-    children: [
-      { path: 'login', name: 'login', component: Login },
-      { path: 'register', name: 'register', component: Register },
-    ],
+    path: '/',
+    redirect: '/feed',
+    meta: { requiresAuth: true } // Default for authenticated section
   },
   {
-    path: '/',
-    component: AppShell,
-    children: [
-      { path: '', redirect: '/users' },
-      { path: 'users', name: 'users', component: Users, meta: { requiresAuth: true } },
-      { path: 'users/:id/todos', name: 'user-todos', component: UserTodos, meta: { requiresAuth: true } },
-      { path: 'todos', name: 'todos', component: Todos, meta: { requiresAuth: true } },
-      { path: 'posts', name: 'posts', component: Posts, meta: { requiresAuth: true } },
-      { path: 'albums', name: 'albums', component: Albums, meta: { requiresAuth: true } },
-    ],
+    path: '/users',
+    name: 'Users',
+    component: () => import('@/pages/Users.vue'),
+    meta: { requiresAuth: true }
   },
-  { path: '/:pathMatch(.*)*', redirect: '/users' },
+  {
+    path: '/users/:id',
+    redirect: to => `/users/${to.params.id}/todos`,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/users/:id/todos',
+    name: 'UserTodos',
+    component: () => import('@/pages/UserTodos.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/todos',
+    name: 'Todos',
+    component: () => import('@/pages/Todos.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/posts',
+    name: 'Posts',
+    component: () => import('@/pages/Posts.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/albums',
+    name: 'Albums',
+    component: () => import('@/pages/Albums.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/feed',
+    name: 'Feed',
+    component: () => import('@/pages/Feed.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('@/pages/Profile.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('@/pages/Settings.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin-danger',
+    name: 'AdminDanger',
+    component: () => import('@/pages/AdminDanger.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/cookie-test',
+    name: 'CookieTest',
+    component: () => import('@/pages/CookieTest.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/auth/login',
+    name: 'Login',
+    component: () => import('@/pages/Login.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/auth/register',
+    name: 'Register',
+    component: () => import('@/pages/Register.vue'),
+    meta: { requiresAuth: false }
+  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes
 })
 
-import { useSessionStore } from '@/stores/session'
-
-let initTried = false
-router.beforeEach(async (to, from, next) => {
+router.beforeEach((to, from, next) => {
   const session = useSessionStore()
 
-  if (!initTried) {
-    initTried = true
-    try {
-      session.loadFromStorage()
-      if (session.access && !session.user) {
-        await session.fetchMe().catch(() => session.logout())
-      }
-    } catch {}
+  // Check if route requires authentication
+  if (to.meta.requiresAuth && !session.isLoggedIn) {
+    next('/auth/login')
+    return
   }
 
-  const isAuthRoute = to.path.startsWith('/auth')
-  const requiresAuth = to.matched.some(r => r.meta && r.meta.requiresAuth)
-
-  if (isAuthRoute) {
-    if (session.user) {
-      const target = (to.query && to.query.redirect) || '/users'
-      return next(target)
-    }
-    return next()
+  // Check admin access for protected routes
+  if (to.meta.requiresAdmin && !session.user?.is_superuser) {
+    next('/')
+    return
   }
 
-  if (requiresAuth && !session.user) {
-    return next({ path: '/auth/login', query: { redirect: to.fullPath } })
+  // If user is logged in and trying to access auth pages, redirect to home
+  if (session.isLoggedIn && (to.path === '/auth/login' || to.path === '/auth/register')) {
+    next('/')
+    return
   }
 
-  return next()
+  next()
 })
 
 export default router
