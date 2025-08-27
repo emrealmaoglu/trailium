@@ -2,7 +2,6 @@
 import { onMounted, ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import logoSrc from '../assets/brand/N2Mobil-Logotype.png'
-import iconSrc from '../assets/brand/N2Mobil-Icon.png'
 
 const isDark = ref(true)
 
@@ -33,7 +32,6 @@ onMounted(loadInitialTheme)
 <template>
   <div style="min-height:100vh; background:var(--c-bg); color:var(--c-text); display:flex; flex-direction:column;">
     <header style="display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--c-border);">
-      <img :src="iconSrc" alt="N2Mobil Icon" style="width:24px; height:24px; object-fit:contain; display:block;" />
       <strong style="font-weight:600; letter-spacing:.02em;">Trailium</strong>
       <button
         :aria-pressed="isDark ? 'true' : 'false'"
