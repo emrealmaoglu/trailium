@@ -1,21 +1,17 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 
-class User(models.Model):
-    name = models.CharField(max_length=255)
-    email = models.EmailField(unique=True)
+class User(AbstractUser):
+    # AbstractUser already has: username, password, email, first_name, last_name
+    avatar = models.URLField(blank=True)
+    full_name = models.CharField(max_length=255, blank=True)
+    gender = models.CharField(max_length=32, blank=True)
     phone = models.CharField(max_length=64, blank=True)
-    website = models.CharField(max_length=255, blank=True)
-    company = models.CharField(max_length=255, blank=True)
     address = models.TextField(blank=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ["-created_at"]
+    about = models.TextField(blank=True)
 
     def __str__(self) -> str:
-        return f"{self.name} <{self.email}>"
+        return self.username
 
 

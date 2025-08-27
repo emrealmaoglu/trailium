@@ -2,7 +2,10 @@
 import { onMounted, ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import logoSrc from '../assets/brand/N2Mobil-Logotype.png'
+import { useSessionStore } from '@/stores/session'
+import UserMenu from '@/components/UserMenu.vue'
 
+const session = useSessionStore()
 const isDark = ref(true)
 
 function applyTheme(dark) {
@@ -31,17 +34,11 @@ onMounted(loadInitialTheme)
 
 <template>
   <div style="min-height:100vh; background:var(--c-bg); color:var(--c-text); display:flex; flex-direction:column;">
-    <header style="display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--c-border);">
+    <header style="display:flex; align-items:center; justify-content:space-between; padding:12px 24px; border-bottom:1px solid var(--c-border);">
       <strong style="font-weight:600; letter-spacing:.02em;">Trailium</strong>
-      <button
-        :aria-pressed="isDark ? 'true' : 'false'"
-        data-testid="theme-toggle"
-        @click="toggleTheme"
-        style="margin-left:auto; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:10px; padding:6px 10px; cursor:pointer;"
-        title="Toggle theme"
-      >
-        {{ isDark ? '🌙' : '☀️' }}
-      </button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <UserMenu />
+      </div>
     </header>
 
     <div style="display:flex; flex:1; min-height:0;">
@@ -58,7 +55,9 @@ onMounted(loadInitialTheme)
         </div>
       </aside>
       <main style="flex:1; padding:24px;">
-        <RouterView />
+        <div style="max-width:1120px; margin:0 auto; width:100%;">
+          <RouterView />
+        </div>
       </main>
     </div>
   </div>

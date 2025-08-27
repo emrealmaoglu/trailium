@@ -1,0 +1,83 @@
+@baseUrl = http://127.0.0.1:8000
+@access = 
+@refresh = 
+
+### Auth: Register
+POST {{baseUrl}}/api/auth/register/
+Content-Type: application/json
+
+{
+  "username": "tester1",
+  "password": "Test1234!",
+  "email": "tester1@example.com"
+}
+
+### Auth: Login
+POST {{baseUrl}}/api/auth/login/
+Content-Type: application/json
+
+{
+  "username": "tester1",
+  "password": "Test1234!"
+}
+
+### Current user
+GET {{baseUrl}}/api/users/me/
+Authorization: Bearer {{access}}
+
+### Refresh
+POST {{baseUrl}}/api/auth/refresh/
+Content-Type: application/json
+
+{
+  "refresh": "{{refresh}}"
+}
+
+### Logout (if implemented)
+POST {{baseUrl}}/api/auth/logout/
+Content-Type: application/json
+
+{
+  "refresh": "{{refresh}}"
+}
+
+### Todos: Create list
+POST {{baseUrl}}/api/todos/lists/
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{
+  "name": "Work",
+  "description": "Daily",
+  "kind": "work"
+}
+
+### Todos: Create item
+POST {{baseUrl}}/api/todos/items/
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{
+  "list": 1,
+  "title": "Task A"
+}
+
+### Todos: Create subitem
+POST {{baseUrl}}/api/todos/subitems/
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{
+  "parent": 1,
+  "title": "Sub A1"
+}
+
+### Todos: Toggle item
+POST {{baseUrl}}/api/todos/items/1/toggle-done/
+Authorization: Bearer {{access}}
+
+### Todos: Get list
+GET {{baseUrl}}/api/todos/lists/1/
+Authorization: Bearer {{access}}
+
+

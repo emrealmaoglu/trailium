@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { json } from '@/lib/http'
 import UserCard from '@/components/UserCard.vue'
 import UserCardSkeleton from '@/components/UserCardSkeleton.vue'
 
@@ -7,12 +8,11 @@ const loading = ref(true)
 const users = ref([])
 const errorMsg = ref('')
 
-onMounted(async () => {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+async function fetchData() {
+  loading.value = true
+  errorMsg.value = ''
   try {
-    const res = await fetch(`${API_BASE}/api/users/`)
-    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-    const payload = await res.json()
+    const payload = await json('/api/users/')
     const data = Array.isArray(payload) ? payload : payload.results || []
     users.value = data.map(u => ({
       id: u.id,
@@ -31,6 +31,13 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+onMounted(() => {
+  fetchData()
+  const onVis = () => { if (document.visibilityState === 'visible') fetchData() }
+  document.addEventListener('visibilitychange', onVis)
+  onUnmounted(() => document.removeEventListener('visibilitychange', onVis))
 })
 
 const title = computed(() => 'All users')
@@ -38,7 +45,10 @@ const title = computed(() => 'All users')
 
 <template>
   <div class="container">
-    <h2 style="margin:0 0 16px; font-size:22px; font-weight:700;">{{ title }}</h2>
+    <div style="display:flex; align-items:center; gap:8px; margin:0 0 16px;">
+      <h2 style="margin:0; font-size:22px; font-weight:700;">{{ title }}</h2>
+      <button @click="fetchData" style="margin-left:auto; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:10px; padding:6px 10px; cursor:pointer; font-size:13px;">Refresh</button>
+    </div>
 
     <div v-if="errorMsg && !loading" style="padding:16px; color:var(--c-text-muted);">{{ errorMsg }}</div>
     <div v-else class="grid grid-cols-responsive" data-testid="users-grid">
