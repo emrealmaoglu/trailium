@@ -1,8 +1,8 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-semibold text-title">All users</h1>
-    <p class="mt-1 text-sm text-brand-gray2">Şimdilik placeholder alan.</p>
-  </div>
+  <section>
+    <h1 style="font-size:28px; font-weight:600; margin-bottom:8px;">Merhaba 👋</h1>
+    <p style="opacity:.75">Users sayfasına geçmeden basit bir iskelet.</p>
+  </section>
 </template>
 
 

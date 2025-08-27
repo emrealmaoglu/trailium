@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "rest_framework",
     "corsheaders",
-    "drf_spectacular"
+    "drf_spectacular",
+    "users",
 
 ]
 
@@ -89,8 +91,26 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+def _postgres_config_from_env():
+    host = os.environ.get('POSTGRES_HOST') or os.environ.get('PGHOST')
+    name = os.environ.get('POSTGRES_DB') or os.environ.get('PGDATABASE')
+    user = os.environ.get('POSTGRES_USER') or os.environ.get('PGUSER')
+    password = os.environ.get('POSTGRES_PASSWORD') or os.environ.get('PGPASSWORD')
+    port = os.environ.get('POSTGRES_PORT') or os.environ.get('PGPORT') or '5432'
+    if host and name and user and password:
+        return {
+            'ENGINE': 'django.db.backends.postgresql',
+            'HOST': host,
+            'PORT': port,
+            'NAME': name,
+            'USER': user,
+            'PASSWORD': password,
+        }
+    return None
+
+_pg = _postgres_config_from_env()
 DATABASES = {
-    'default': {
+    'default': _pg or {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }

@@ -1,62 +1,75 @@
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { RouterLink, RouterView } from 'vue-router'
 import logoSrc from '../assets/brand/N2Mobil-Logotype.png'
 
-const router = useRouter()
-const route  = useRoute()
+const isDark = ref(true)
 
-const nav = [
-  { to: '/',       label: 'Users'  },
-  { to: '/todos',  label: 'Todos'  },
-  { to: '/posts',  label: 'Posts'  },
-  { to: '/albums', label: 'Albums' },
-]
+function applyTheme(dark) {
+  const root = document.documentElement
+  root.classList.toggle('theme-dark', dark)
+}
+
+function loadInitialTheme() {
+  const saved = localStorage.getItem('theme')
+  if (saved === 'dark' || saved === 'light') {
+    isDark.value = saved === 'dark'
+  } else {
+    isDark.value = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  applyTheme(isDark.value)
+}
+
+function toggleTheme() {
+  isDark.value = !isDark.value
+  applyTheme(isDark.value)
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+}
+
+onMounted(loadInitialTheme)
 </script>
 
 <template>
-  <div class="min-h-screen grid grid-cols-[240px_1fr] relative">
-    <!-- Sidebar -->
-    <aside class="bg-white border-r border-brand-grayLight relative">
-      <div class="px-5 py-4 flex items-center gap-2">
-        <div class="w-9 h-9 rounded-full overflow-hidden shrink-0">
-          <img :src="logoSrc" class="w-full h-full object-cover object-left" alt="N2Mobil" />
+  <div style="min-height:100vh; background:var(--c-bg); color:var(--c-text); display:flex; flex-direction:column;">
+    <header style="display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--c-border);">
+      <strong style="font-weight:600; letter-spacing:.02em;">Trailium</strong>
+      <button
+        :aria-pressed="isDark ? 'true' : 'false'"
+        data-testid="theme-toggle"
+        @click="toggleTheme"
+        style="margin-left:auto; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:10px; padding:6px 10px; cursor:pointer;"
+        title="Toggle theme"
+      >
+        {{ isDark ? '🌙' : '☀️' }}
+      </button>
+    </header>
+
+    <div style="display:flex; flex:1; min-height:0;">
+      <aside style="width:240px; border-right:1px solid var(--c-border); padding:12px; position:relative;">
+        <nav class="side__nav">
+          <RouterLink to="/users" class="nav__a" active-class="is-active">Users</RouterLink>
+          <RouterLink to="/todos" class="nav__a" active-class="is-active">Todos</RouterLink>
+          <RouterLink to="/posts" class="nav__a" active-class="is-active">Posts</RouterLink>
+          <RouterLink to="/albums" class="nav__a" active-class="is-active">Albums</RouterLink>
+        </nav>
+        <!-- bottom-left logo -->
+        <div style="position:absolute; left:12px; bottom:12px; width:36px; height:36px; border-radius:50%; overflow:hidden;">
+          <img :src="logoSrc" alt="N2Mobil" style="width:100%; height:100%; object-fit:cover; object-position:left;" />
         </div>
-        <strong class="ml-1 text-sm tracking-wide text-title">Trailium</strong>
-      </div>
-
-      <nav class="mt-3 space-y-1">
-        <button
-          v-for="item in nav"
-          :key="item.to"
-          @click="router.push(item.to)"
-          class="w-full text-left px-5 py-2.5 text-sm rounded-md hover:bg-brand.grayLight/50 transition"
-          :class="route.path === item.to ? 'bg-brand.grayLight/70 font-medium' : 'text-brand-gray2'"
-        >
-          {{ item.label }}
-        </button>
-      </nav>
-
-      <!-- Alt köşe logo alanı -->
-      <div class="absolute bottom-4 left-0 right-0 px-5">
-        <div class="h-12 rounded-xl bg-brand.grayLight/60 flex items-center justify-center text-xs text-brand-gray2">
-          N2Mobil
-        </div>
-      </div>
-    </aside>
-
-    <!-- İçerik sütunu -->
-    <section class="min-h-screen bg-[var(--surface)]">
-      <!-- Topbar -->
-      <header class="h-14 bg-white border-b border-brand-grayLight flex items-center px-6">
-        <span class="text-sm text-subtitle">Topbar</span>
-      </header>
-
-      <!-- Sayfa içeriği -->
-      <main class="max-w-7xl mx-auto">
-        <router-view />
+      </aside>
+      <main style="flex:1; padding:24px;">
+        <RouterView />
       </main>
-    </section>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.side__nav { display:grid; gap:4px; }
+.nav__a { padding:8px 10px; border-radius:10px; color:var(--c-text-muted); text-decoration:none; display:block; border-left:3px solid transparent; }
+.nav__a:hover { background:var(--c-surface-2); color:var(--c-text); }
+.nav__a.is-active { background:var(--c-surface-2); color:var(--c-text); font-weight:600; border-left-color: var(--c-accent); }
+.nav__a:focus { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+</style>
 
 

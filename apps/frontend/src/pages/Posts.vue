@@ -1,3 +1,8 @@
-<template><div class="p-6"><h1 class="text-2xl font-semibold text-title">Posts</h1></div></template>
+<template>
+  <section>
+    <h1>Posts</h1>
+    <p>Placeholder</p>
+  </section>
+</template>
 
 

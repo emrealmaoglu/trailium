@@ -1,0 +1,46 @@
+/* src/styles/tokens.css */
+:root {
+  /* brand */
+  --brand-gray:      #5d6675;
+  --brand-black:     #0f1720;
+  --brand-grayLight: #eef1f5;
+  --brand-gray2:     #667a8d;
+  --brand-purple:    #5f37d2;
+
+  /* typography */
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, Arial, sans-serif;
+
+  /* radii & shadows */
+  --radius-card: 16px;
+  --shadow-card: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.06);
+
+  /* spacing scale (rem) */
+  --space-1: .25rem;  --space-2: .5rem;   --space-3: .75rem;
+  --space-4: 1rem;    --space-5: 1.25rem; --space-6: 1.5rem;
+  --space-8: 2rem;    --space-10: 2.5rem;
+
+  /* light theme surface */
+  --c-bg: #ffffff;
+  --c-surface: #ffffff;
+  --c-surface-2: #f7f8fa;
+  --c-text: #0f1720;
+  --c-text-muted: #5d6675;
+  --c-border: #e6e8ee;
+  --c-card: #ffffff;
+
+  /* accent */
+  --c-accent: var(--brand-purple);
+}
+
+/* dark theme overrides */
+:root.theme-dark {
+  --c-bg: #111315;
+  --c-surface: #14171a;
+  --c-surface-2: #171a1e;
+  --c-text: #e9edf3;
+  --c-text-muted: #a7b0bd;
+  --c-border: #2a2f37;
+  --c-card: #161a1f;
+}
+
+
