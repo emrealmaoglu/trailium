@@ -5,10 +5,13 @@ import UserCardSkeleton from '@/components/UserCardSkeleton.vue'
 
 const loading = ref(true)
 const users = ref([])
+const errorMsg = ref('')
 
 onMounted(async () => {
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/users/')
+    const res = await fetch(`${API_BASE}/api/users/`)
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
     const payload = await res.json()
     const data = Array.isArray(payload) ? payload : payload.results || []
     users.value = data.map(u => ({
@@ -20,6 +23,11 @@ onMounted(async () => {
       companyName: u.company || '',
       website: (u.website || '').replace(/^https?:\/\//,'')
     }))
+    if (users.value.length === 0) {
+      errorMsg.value = 'No users available yet.'
+    }
+  } catch (e) {
+    errorMsg.value = 'Could not load users. Please retry.'
   } finally {
     loading.value = false
   }
@@ -32,7 +40,8 @@ const title = computed(() => 'All users')
   <div class="container">
     <h2 style="margin:0 0 16px; font-size:22px; font-weight:700;">{{ title }}</h2>
 
-    <div class="grid grid-cols-responsive" data-testid="users-grid">
+    <div v-if="errorMsg && !loading" style="padding:16px; color:var(--c-text-muted);">{{ errorMsg }}</div>
+    <div v-else class="grid grid-cols-responsive" data-testid="users-grid">
       <template v-if="loading">
         <UserCardSkeleton v-for="n in 9" :key="n" />
       </template>

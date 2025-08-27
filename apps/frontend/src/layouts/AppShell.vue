@@ -45,16 +45,16 @@ onMounted(loadInitialTheme)
     </header>
 
     <div style="display:flex; flex:1; min-height:0;">
-      <aside style="width:240px; border-right:1px solid var(--c-border); padding:12px; position:relative;">
+      <aside style="width:240px; border-right:1px solid var(--c-border); padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
         <nav class="side__nav">
           <RouterLink to="/users" class="nav__a" active-class="is-active">Users</RouterLink>
           <RouterLink to="/todos" class="nav__a" active-class="is-active">Todos</RouterLink>
           <RouterLink to="/posts" class="nav__a" active-class="is-active">Posts</RouterLink>
           <RouterLink to="/albums" class="nav__a" active-class="is-active">Albums</RouterLink>
         </nav>
-        <!-- bottom-left logo -->
-        <div style="position:absolute; left:12px; bottom:12px; width:36px; height:36px; border-radius:50%; overflow:hidden;">
-          <img :src="logoSrc" alt="N2Mobil" style="width:100%; height:100%; object-fit:cover; object-position:left;" />
+        <!-- bottom-left full logotype -->
+        <div style="padding:8px 4px;">
+          <img :src="logoSrc" alt="N2Mobil Logotype" style="object-fit:contain; object-position:left; max-width:100%; height:auto; display:block;" />
         </div>
       </aside>
       <main style="flex:1; padding:24px;">
