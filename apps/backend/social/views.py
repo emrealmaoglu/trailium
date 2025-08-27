@@ -1,5 +1,8 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Prefetch, Q
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import decorators, permissions, response, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -12,6 +15,8 @@ from .serializers import (AlbumCreateSerializer, AlbumSerializer,
                           FollowSerializer, PhotoCreateSerializer,
                           PhotoSerializer, PostCreateSerializer,
                           PostSerializer)
+
+logger = logging.getLogger(__name__)
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -33,6 +38,14 @@ def _visible_posts_for(user):
     )
 
 
+@extend_schema_view(
+    list=extend_schema(description="List all visible posts for the authenticated user"),
+    create=extend_schema(description="Create a new post"),
+    retrieve=extend_schema(description="Retrieve a specific post"),
+    update=extend_schema(description="Update a post (owner only)"),
+    partial_update=extend_schema(description="Partially update a post (owner only)"),
+    destroy=extend_schema(description="Delete a post (owner only)"),
+)
 class PostViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = (
@@ -65,6 +78,12 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    @extend_schema(
+        description="Like a post",
+        responses={
+            200: {"type": "object", "properties": {"status": {"type": "string"}}}
+        },
+    )
     @decorators.action(detail=True, methods=["post"], url_path="like")
     def like(self, request, pk=None):
         post = self.get_object()
@@ -85,6 +104,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
         return response.Response({"status": "liked"}, status=status.HTTP_200_OK)
 
+    @extend_schema(description="Unlike a post", responses={204: None})
     @decorators.action(detail=True, methods=["delete"], url_path="unlike")
     def unlike(self, request, pk=None):
         post = self.get_object()
@@ -106,18 +126,38 @@ class PostViewSet(viewsets.ModelViewSet):
 
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(
+        description="Get or create comments for a post",
+        responses={200: CommentSerializer(many=True), 201: None},
+    )
     @decorators.action(detail=True, methods=["get", "post"], url_path="comments")
     def comments(self, request, pk=None):
-        post = self.get_object()
-        if request.method == "GET":
-            qs = post.comments.select_related("user").all()
-            return response.Response(CommentSerializer(qs, many=True).data)
-        ser = CommentCreateSerializer(data=request.data)
-        ser.is_valid(raise_exception=True)
-        Comment.objects.create(post=post, user=request.user, **ser.validated_data)
-        return response.Response(status=status.HTTP_201_CREATED)
+        try:
+            post = self.get_object()
+            if request.method == "GET":
+                qs = post.comments.select_related("user").all()
+                return response.Response(CommentSerializer(qs, many=True).data)
+
+            ser = CommentCreateSerializer(data=request.data)
+            ser.is_valid(raise_exception=True)
+            Comment.objects.create(post=post, user=request.user, **ser.validated_data)
+            return response.Response(status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logger.error(f"Error in comments action: {e}", exc_info=True)
+            return response.Response(
+                {"error": "An error occurred while processing your request"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
+@extend_schema_view(
+    list=extend_schema(description="List all albums for the authenticated user"),
+    create=extend_schema(description="Create a new album"),
+    retrieve=extend_schema(description="Retrieve a specific album"),
+    update=extend_schema(description="Update an album (owner only)"),
+    partial_update=extend_schema(description="Partially update an album (owner only)"),
+    destroy=extend_schema(description="Delete an album (owner only)"),
+)
 class AlbumViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     serializer_class = AlbumSerializer
@@ -146,6 +186,14 @@ class AlbumViewSet(viewsets.ModelViewSet):
         return response.Response(status=status.HTTP_201_CREATED)
 
 
+@extend_schema_view(
+    list=extend_schema(description="List follow requests for the authenticated user"),
+    create=extend_schema(description="Create a follow request"),
+    retrieve=extend_schema(description="Retrieve a specific follow relationship"),
+    update=extend_schema(description="Update a follow relationship"),
+    partial_update=extend_schema(description="Partially update a follow relationship"),
+    destroy=extend_schema(description="Delete a follow relationship"),
+)
 class FollowViewSet(viewsets.ModelViewSet):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
@@ -284,19 +332,6 @@ class FollowViewSet(viewsets.ModelViewSet):
             return Response({"message": "Follow request accepted"}, status=200)
         except Follow.DoesNotExist:
             return Response({"error": "Follow request not found"}, status=404)
-
-    @action(detail=False, methods=["post"], url_path="users/(?P<user_id>[^/.]+)/reject")
-    def reject(self, request, user_id=None):
-        if not user_id:
-            return Response({"error": "User ID is required"}, status=400)
-
-        try:
-            Follow.objects.filter(
-                follower_id=user_id, followed=request.user, status="pending"
-            ).delete()
-            return Response({"message": "Follow request rejected"}, status=200)
-        except Exception as e:
-            return Response({"error": str(e)}, status=400)
 
     @action(detail=False, methods=["get"], url_path="users/(?P<user_id>[^/.]+)/status")
     def status(self, request, user_id=None):

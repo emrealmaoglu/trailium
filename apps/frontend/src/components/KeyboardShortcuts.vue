@@ -59,31 +59,24 @@ function handleKeydown(event) {
     switch (secondKey) {
       case 'h':
         router.push('/')
-        // Notification removed - unnecessary success message
         break
       case 'u':
         router.push('/users')
-        // Notification removed - unnecessary success message
         break
       case 't':
         router.push('/todos')
-        // Notification removed - unnecessary success message
         break
       case 'p':
         router.push('/posts')
-        // Notification removed - unnecessary success message
         break
       case 'a':
         router.push('/albums')
-        // Notification removed - unnecessary success message
         break
       case 'f':
         router.push('/feed')
-        // Notification removed - unnecessary success message
         break
       case 's':
         router.push('/settings')
-        // Notification removed - unnecessary success message
         break
     }
 

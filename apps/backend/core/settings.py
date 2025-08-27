@@ -21,18 +21,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-your-secret-key-here")
-
-# Validate SECRET_KEY in production
-if (
-    not os.environ.get("DEBUG", "False").lower() == "true"
-    and SECRET_KEY == "django-insecure-your-secret-key-here"
-):
-    raise ValueError("SECRET_KEY must be set in production environment")
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+
+# Security: Force DEBUG=False in production
+if os.environ.get("ENVIRONMENT") == "production":
+    DEBUG = False
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable must be set")
+
+# Validate SECRET_KEY in production
+if not DEBUG and "django-insecure" in SECRET_KEY:
+    raise ValueError("SECRET_KEY must be properly set in production environment")
 
 ALLOWED_HOSTS = []
 
@@ -105,33 +108,22 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
 }
 
-ALLOWED_HOSTS = ["*"]
+# Security: Restrict allowed hosts
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # CORS Settings - SECURE BY DEFAULT
-CORS_ALLOW_ALL_ORIGINS = (
-    os.environ.get("CORS_ALLOW_ALL_ORIGINS", "False").lower() == "true"
-)
+CORS_ALLOW_ALL_ORIGINS = False  # Never allow all origins in production
 
-# Only allow specific origins in production
-if not CORS_ALLOW_ALL_ORIGINS:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ]
+# Only allow specific origins
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+).split(",")
 
-    # Add production domains from environment
-    prod_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
-    if prod_origins and prod_origins[0]:
-        CORS_ALLOWED_ORIGINS.extend([origin.strip() for origin in prod_origins])
-else:
-    # Log warning if CORS is wide open
-    import logging
-
-    logger = logging.getLogger(__name__)
-    logger.warning(
-        "CORS_ALLOW_ALL_ORIGINS is enabled - this is not secure for production!"
+# Add production domains from environment if specified
+prod_origins = os.environ.get("PROD_CORS_ORIGINS", "")
+if prod_origins:
+    CORS_ALLOWED_ORIGINS.extend(
+        [origin.strip() for origin in prod_origins.split(",") if origin.strip()]
     )
 
 CORS_ALLOW_CREDENTIALS = True
@@ -177,10 +169,14 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 # Cookie Settings
-SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SECURE = (
+    os.environ.get("ENVIRONMENT") == "production"
+)  # True in production with HTTPS
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_SECURE = (
+    os.environ.get("ENVIRONMENT") == "production"
+)  # True in production with HTTPS
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
 
@@ -201,10 +197,17 @@ LOGGING = {
             "format": "{asctime} {levelname} {message} - {duration}ms",
             "style": "{",
         },
+        "security": {
+            "format": "SECURITY: {levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
     },
     "filters": {
         "require_debug_true": {
             "()": "django.utils.log.RequireDebugTrue",
+        },
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
         },
     },
     "handlers": {
@@ -216,21 +219,35 @@ LOGGING = {
         },
         "file": {
             "level": "INFO",
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.RotatingFileHandler",
             "filename": BASE_DIR / "logs" / "django.log",
             "formatter": "verbose",
+            "maxBytes": 10 * 1024 * 1024,  # 10MB
+            "backupCount": 5,
         },
         "performance": {
             "level": "INFO",
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.RotatingFileHandler",
             "filename": BASE_DIR / "logs" / "performance.log",
             "formatter": "performance",
+            "maxBytes": 10 * 1024 * 1024,  # 10MB
+            "backupCount": 3,
         },
         "error_file": {
             "level": "ERROR",
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.RotatingFileHandler",
             "filename": BASE_DIR / "logs" / "error.log",
             "formatter": "verbose",
+            "maxBytes": 10 * 1024 * 1024,  # 10MB
+            "backupCount": 5,
+        },
+        "security_file": {
+            "level": "WARNING",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs" / "security.log",
+            "formatter": "security",
+            "maxBytes": 5 * 1024 * 1024,  # 5MB
+            "backupCount": 3,
         },
     },
     "loggers": {
@@ -245,8 +262,13 @@ LOGGING = {
             "propagate": False,
         },
         "django.security": {
-            "handlers": ["error_file"],
-            "level": "ERROR",
+            "handlers": ["security_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ["console"] if DEBUG else [],
+            "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
         "performance": {
@@ -267,6 +289,11 @@ LOGGING = {
         "todos": {
             "handlers": ["console", "file"],
             "level": "INFO",
+            "propagate": False,
+        },
+        "security": {
+            "handlers": ["security_file"],
+            "level": "WARNING",
             "propagate": False,
         },
     },

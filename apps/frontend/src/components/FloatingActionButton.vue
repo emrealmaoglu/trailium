@@ -13,7 +13,6 @@ function toggleMenu() {
 function navigateTo(route, action) {
   router.push(route)
   showMenu.value = false
-        // Notification removed - unnecessary success message
 }
 
 function closeMenu() {

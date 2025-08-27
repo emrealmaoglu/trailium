@@ -40,7 +40,6 @@ async function fetchPosts(url = '/api/posts/') {
     if (url === '/api/posts/') results.value = newResults
     else results.value = results.value.concat(newResults)
     next.value = payload.next || ''
-    // Notification removed - unnecessary success message
   } catch (e) {
     errorMsg.value = 'Could not load posts.'
     showNotification('Failed to load posts', 'error', 5000)
@@ -70,7 +69,6 @@ async function addComment() {
   try {
     comments.value.unshift({ id: Math.random(), user: { username: 'You' }, body, created_at: new Date().toISOString() })
     await json(`/api/posts/${activePost.value.id}/comments/`, { method: 'POST', body: JSON.stringify({ body }) })
-    // Notification removed - unnecessary success message
   } catch {
     // revert on error
     comments.value.shift()
@@ -89,7 +87,6 @@ async function toggleLike(post) {
   try {
     const method = likedBefore ? 'DELETE' : 'POST'
     await json(`/api/posts/${post.id}/like/`, { method })
-    // Notification removed - unnecessary success message
   } catch {
     // revert
     post.likes_count = (post.likes_count || 0) - delta
@@ -155,9 +152,8 @@ async function createPost() {
       body: formData
     })
     results.value.unshift(post)
-    clearNewPost()
-    createModalOpen.value = false
-    // Notification removed - unnecessary success message
+          clearNewPost()
+      createModalOpen.value = false
   } catch (e) {
     errorMsg.value = 'Could not create post.'
     showNotification('Failed to create post', 'error', 5000)
@@ -184,9 +180,8 @@ async function saveEdit() {
       results.value[index] = { ...results.value[index], ...updatedPost }
     }
 
-    editModalOpen.value = false
-    editingPost.value = null
-    // Notification removed - unnecessary success message
+          editModalOpen.value = false
+      editingPost.value = null
   } catch (e) {
     showNotification('Failed to update post', 'error', 5000)
   } finally {

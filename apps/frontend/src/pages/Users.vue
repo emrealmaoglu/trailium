@@ -113,8 +113,6 @@ async function fetchData(input = `/api/users/?page=${page.value}`) {
       errorMsg.value = 'No other users available yet.'
     }
 
-    // Notification removed - unnecessary success message
-
   } catch (error) {
     console.error('Failed to fetch users:', error)
     errorMsg.value = 'Could not load users. Please retry.'
@@ -147,8 +145,6 @@ async function searchUsers() {
     prevUrl.value = payload.previous || ''
     total.value = payload.count || 0
     page.value = 1
-
-    // Notification removed - unnecessary success message
 
   } catch (error) {
     console.error('Search failed:', error)
@@ -195,7 +191,6 @@ function clearFilters() {
   clearCache('/api/users/')
 
   fetchData()
-      // Notification removed - unnecessary info message
 }
 
 // Lifecycle

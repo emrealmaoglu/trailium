@@ -1,15 +1,35 @@
 from django.conf import settings
+from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
 
 class Post(models.Model):
+    VISIBILITY_CHOICES = [
+        ("public", "Public"),
+        ("followers", "Followers only"),
+        ("private", "Private"),
+    ]
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="posts"
     )
-    title = models.CharField(max_length=200)
-    body = models.TextField(blank=True)
+    title = models.CharField(
+        max_length=200,
+        validators=[
+            MinLengthValidator(5, "Title must be at least 5 characters long."),
+            MaxLengthValidator(200, "Title cannot exceed 200 characters."),
+        ],
+    )
+    body = models.TextField(
+        blank=True,
+        validators=[
+            MaxLengthValidator(5000, "Post content cannot exceed 5000 characters.")
+        ],
+    )
     is_published = models.BooleanField(default=True)
-    visibility = models.CharField(max_length=16, default="public")
+    visibility = models.CharField(
+        max_length=16, choices=VISIBILITY_CHOICES, default="public"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -30,7 +50,12 @@ class Comment(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="comments"
     )
-    body = models.TextField()
+    body = models.TextField(
+        validators=[
+            MinLengthValidator(1, "Comment cannot be empty."),
+            MaxLengthValidator(1000, "Comment cannot exceed 1000 characters."),
+        ]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

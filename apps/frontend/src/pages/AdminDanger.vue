@@ -210,7 +210,7 @@
     <!-- Loading Overlay -->
     <div v-if="isLoading" class="loading-overlay">
       <div class="loading-content">
-        <Spinner size="large" />
+        <LoadingSpinner size="large" />
         <p>Processing...</p>
       </div>
     </div>
@@ -223,7 +223,7 @@ import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import { json } from '@/lib/http'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
-import Spinner from '@/components/Spinner.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const router = useRouter()
 const sessionStore = useSessionStore()

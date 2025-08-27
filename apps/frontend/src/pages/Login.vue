@@ -211,7 +211,7 @@ async function submit(e) {
   width: 16px;
   height: 16px;
   border: 2px solid transparent;
-  border-top: 2px solid white;
+  border-top: 2px solid #374151;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
