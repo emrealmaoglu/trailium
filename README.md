@@ -175,6 +175,19 @@ npm run dev
 - i18n: TR/EN labels for list, detail, pagination
 - Test: login → go to `/users` → click a card → `/users/:id` → switch language from User Menu
 
+## Todos Frontend (Sprint 3.2)
+
+- /users/:id → Todos sekmesi eklenmiştir.
+- Özellikler: listeler/öğeler/alt öğeler için CRUD, toggle-done, ilerleme çubuğu, sayfalama.
+- i18n: TR/EN etiketler; dil değişimi User Menu → Dil.
+
+Hızlı deneme
+
+1) /users → bir kullanıcıya tıklayın → Todos
+2) “Günlük” adında bir liste ekleyin
+3) Birkaç öğe ekleyin, bir öğeye alt öğeler ekleyin
+4) Alt öğeyi ve öğeyi toggle yapın → % ilerleme güncellenir
+5) URL’de ?page=2 deneyin → sayfa değişir
 ## Todos Backend (Sprint 3.1)
 
 - Endpoints (all under `/api/`):

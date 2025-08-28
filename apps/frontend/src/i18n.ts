@@ -50,6 +50,26 @@ const messages = {
       notFound: 'Kullanıcı bulunamadı',
       comingSoon: 'Yakında',
       tabs: { todos: 'Yapılacaklar', posts: 'Gönderiler', albums: 'Albümler' }
+    },
+    todos: {
+      title: 'Yapılacaklar',
+      addList: 'Liste ekle',
+      addItem: 'Öğe ekle',
+      addSubItem: 'Alt öğe ekle',
+      delete: 'Sil',
+      edit: 'Düzenle',
+      save: 'Kaydet',
+      cancel: 'İptal',
+      emptyLists: 'Henüz liste yok',
+      emptyItems: 'Bu listede öğe yok',
+      error: 'Bir hata oluştu',
+      retry: 'Tekrar dene',
+      progress: 'İlerleme',
+      items: 'Öğeler',
+      subitems: 'Alt öğeler',
+      due: 'Son tarih',
+      kind: { daily: 'Günlük', work: 'İş', home: 'Ev', personal: 'Kişisel', other: 'Diğer' },
+      pagination: { prev: 'Önceki', next: 'Sonraki' }
     }
   },
   en: {
@@ -101,6 +121,26 @@ const messages = {
       notFound: 'User not found',
       comingSoon: 'Coming soon',
       tabs: { todos: 'Todos', posts: 'Posts', albums: 'Albums' }
+    },
+    todos: {
+      title: 'Todos',
+      addList: 'Add list',
+      addItem: 'Add item',
+      addSubItem: 'Add sub-item',
+      delete: 'Delete',
+      edit: 'Edit',
+      save: 'Save',
+      cancel: 'Cancel',
+      emptyLists: 'No lists yet',
+      emptyItems: 'No items in this list',
+      error: 'Something went wrong',
+      retry: 'Retry',
+      progress: 'Progress',
+      items: 'Items',
+      subitems: 'Sub-items',
+      due: 'Due',
+      kind: { daily: 'Daily', work: 'Work', home: 'Home', personal: 'Personal', other: 'Other' },
+      pagination: { prev: 'Previous', next: 'Next' }
     }
   }
 }

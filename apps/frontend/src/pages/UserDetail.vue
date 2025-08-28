@@ -28,10 +28,11 @@
     </div>
 
     <div class="tabs">
-      <button class="tab" disabled>{{ t('user.tabs.todos') }} – {{ t('user.comingSoon') }}</button>
+      <button class="tab active">{{ t('user.tabs.todos') }}</button>
       <button class="tab" disabled>{{ t('user.tabs.posts') }} – {{ t('user.comingSoon') }}</button>
       <button class="tab" disabled>{{ t('user.tabs.albums') }} – {{ t('user.comingSoon') }}</button>
     </div>
+    <UserTodos />
   </div>
 </template>
 
@@ -41,6 +42,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { json } from '@/lib/http'
 import { useI18n } from 'vue-i18n'
+import UserTodos from './UserTodos.vue'
 
 const route = useRoute()
 const { t } = useI18n()
