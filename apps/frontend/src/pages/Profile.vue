@@ -28,9 +28,10 @@ const selectedPhoto = ref(null)
 
 const genderOptions = [
   { value: '', label: 'Prefer not to say' },
-  { value: 'M', label: 'Male' },
-  { value: 'F', label: 'Female' },
-  { value: 'O', label: 'Other' }
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'other', label: 'Other' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ]
 
 async function loadMe() {
@@ -62,11 +63,24 @@ async function saveProfile() {
 
   savingProfile.value = true
   try {
-    await json('/api/users/me/', { method: 'PATCH', body: JSON.stringify(profile.value) })
+    // Only send fields accepted by backend serializer
+    const payload = {
+      username: profile.value.username,
+      email: profile.value.email,
+      full_name: profile.value.full_name,
+      avatar: profile.value.avatar,
+      gender: profile.value.gender,
+      phone: profile.value.phone,
+      address: profile.value.address,
+      about: profile.value.about,
+      // is_private is supported by backend; include if present in UI later
+    }
+    await json('/api/users/me/', { method: 'PATCH', body: JSON.stringify(payload) })
     await session.fetchMe().catch(() => {})
     showMessage('Profile updated successfully!', 'success')
   } catch (e) {
-    showMessage('Update failed. Please try again.', 'error')
+    const msg = (e && e.message) ? e.message : 'Update failed. Please try again.'
+    showMessage(msg, 'error')
   } finally {
     savingProfile.value = false
   }

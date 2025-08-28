@@ -31,7 +31,10 @@ if os.environ.get("ENVIRONMENT") == "production":
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
-    raise ValueError("SECRET_KEY environment variable must be set")
+    # Use a default key for local/dev, but require env var in production
+    if os.environ.get("ENVIRONMENT") == "production":
+        raise ValueError("SECRET_KEY environment variable must be set")
+    SECRET_KEY = "django-insecure-dev-key"
 
 # Validate SECRET_KEY in production
 if not DEBUG and "django-insecure" in SECRET_KEY:

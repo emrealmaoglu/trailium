@@ -15,7 +15,8 @@ const routes = [
   },
   {
     path: '/users/:id',
-    redirect: to => `/users/${to.params.id}/todos`,
+    name: 'UserProfileView',
+    component: () => import('@/pages/UsersPage.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -40,6 +41,12 @@ const routes = [
     path: '/albums',
     name: 'Albums',
     component: () => import('@/pages/Albums.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/connections',
+    name: 'Connections',
+    component: () => import('@/pages/Connections.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -70,7 +77,7 @@ const routes = [
     path: '/cookie-test',
     name: 'CookieTest',
     component: () => import('@/pages/CookieTest.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/auth/login',

@@ -1,5 +1,18 @@
 from rest_framework import serializers
-from .models import TodoList, TodoItem, TodoSubItem
+from .models import TodoList, TodoItem, TodoSubItem, TodoPriority
+
+
+class TodoPrioritySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TodoPriority
+        fields = [
+            "id",
+            "key",
+            "name",
+            "color",
+            "sort_order",
+            "is_default",
+        ]
 
 
 class TodoSubItemSerializer(serializers.ModelSerializer):
@@ -18,6 +31,10 @@ class TodoSubItemSerializer(serializers.ModelSerializer):
 
 class TodoItemSerializer(serializers.ModelSerializer):
     subitems = TodoSubItemSerializer(many=True, read_only=True)
+    priority = TodoPrioritySerializer(read_only=True)
+    priority_id = serializers.PrimaryKeyRelatedField(
+        queryset=TodoPriority.objects.all(), source="priority", write_only=True, required=False
+    )
 
     class Meta:
         model = TodoItem
@@ -28,6 +45,8 @@ class TodoItemSerializer(serializers.ModelSerializer):
             "description",
             "is_done",
             "due_date",
+            "priority",
+            "priority_id",
             "progress_cached",
             "subitems",
             "created_at",

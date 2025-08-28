@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { ref, inject, computed, onMounted, onUnmounted } from 'vue'
 import { useSessionStore } from '@/stores/session'
+import { json } from '@/lib/http'
 import logoSrc from '../assets/brand/N2Mobil-Logotype.png'
 import UserMenu from '@/components/UserMenu.vue'
 
@@ -12,6 +13,7 @@ const showNotification = inject('showNotification')
 const isMobile = ref(false)
 const sidebarOpen = ref(false)
 const isTablet = ref(false)
+const pendingRequests = ref(0)
 
 // Computed
 const isAdmin = computed(() => sessionStore.user?.is_superuser)
@@ -52,12 +54,23 @@ onMounted(() => {
   checkScreenSize()
   window.addEventListener('resize', checkScreenSize)
   document.addEventListener('keydown', handleEscape)
+  // Load pending follow requests count
+  loadPendingCount()
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkScreenSize)
   document.removeEventListener('keydown', handleEscape)
 })
+
+async function loadPendingCount() {
+  try {
+    const data = await json('/api/follows/pending/')
+    pendingRequests.value = Array.isArray(data) ? data.length : 0
+  } catch {
+    pendingRequests.value = 0
+  }
+}
 </script>
 
 <template>
@@ -155,8 +168,19 @@ onUnmounted(() => {
             <span class="nav-text">Albums</span>
           </RouterLink>
 
-          <!-- Development Tools -->
-          <div class="dev-section">
+          <RouterLink
+            to="/connections"
+            class="nav-link"
+            active-class="is-active"
+            @click="closeSidebar"
+          >
+            <span class="nav-icon">🔗</span>
+            <span class="nav-text">Connections</span>
+            <span v-if="pendingRequests > 0" class="badge">{{ pendingRequests }}</span>
+          </RouterLink>
+
+          <!-- Development Tools (admin only) -->
+          <div v-if="isAdmin" class="dev-section">
             <div class="dev-header">
               <div class="dev-badge">Dev Tools</div>
             </div>

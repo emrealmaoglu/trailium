@@ -5,15 +5,33 @@ from django.contrib.auth.models import User
 from rest_framework import (decorators, filters, permissions, response, status,
                             viewsets)
 from rest_framework.decorators import api_view, permission_classes
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+from rest_framework import serializers
 
 from .serializers import (PasswordChangeSerializer, ProfileUpdateSerializer,
                           RegisterSerializer, UserSerializer)
 
 User = get_user_model()
+
+
+class TokenPairSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+
+
+class LoginRequestSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+    rememberMe = serializers.BooleanField(required=False)
+
+
+class MessageSerializer(serializers.Serializer):
+    message = serializers.CharField()
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -59,6 +77,7 @@ class RegisterViewSet(viewsets.GenericViewSet):
 class LogoutView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(request=TokenPairSerializer, responses={205: OpenApiResponse(None)})
     def post(self, request):
 
         refresh = request.data.get("refresh")
@@ -78,6 +97,7 @@ class LogoutView(APIView):
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(request=LoginRequestSerializer, responses={200: TokenPairSerializer, 401: OpenApiResponse(None)})
     def post(self, request):
         from datetime import timedelta
 
@@ -116,6 +136,7 @@ class LoginView(APIView):
 class ChangePasswordView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @extend_schema(request=PasswordChangeSerializer, responses={204: OpenApiResponse(None)})
     def post(self, request):
         ser = PasswordChangeSerializer(data=request.data, context={"request": request})
         ser.is_valid(raise_exception=True)
@@ -125,55 +146,56 @@ class ChangePasswordView(APIView):
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(["POST"])
-@permission_classes([AllowAny])
-def set_secure_cookies(request):
-    """Set httpOnly cookies for JWT tokens"""
-    try:
-        data = json.loads(request.body)
-        access_token = data.get("access")
-        refresh_token = data.get("refresh")
+class SetSecureCookiesView(APIView):
+    permission_classes = [permissions.AllowAny]
 
-        if not access_token or not refresh_token:
-            return Response(
-                {"error": "Missing tokens"}, status=status.HTTP_400_BAD_REQUEST
+    @extend_schema(request=TokenPairSerializer, responses={200: MessageSerializer})
+    def post(self, request):
+        """Set httpOnly cookies for JWT tokens"""
+        try:
+            data = request.data if isinstance(request.data, dict) else {}
+            access_token = data.get("access")
+            refresh_token = data.get("refresh")
+
+            if not access_token or not refresh_token:
+                return Response(
+                    {"error": "Missing tokens"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            response = Response({"message": "Cookies set successfully"})
+
+            # Set httpOnly, secure cookies
+            response.set_cookie(
+                "access_token",
+                access_token,
+                httponly=True,
+                secure=True,
+                samesite="Strict",
+                max_age=3600,
             )
 
-        response = Response({"message": "Cookies set successfully"})
+            response.set_cookie(
+                "refresh_token",
+                refresh_token,
+                httponly=True,
+                secure=True,
+                samesite="Strict",
+                max_age=7 * 24 * 3600,
+            )
 
-        # Set httpOnly, secure cookies
-        response.set_cookie(
-            "access_token",
-            access_token,
-            httponly=True,
-            secure=True,  # HTTPS only
-            samesite="Strict",
-            max_age=3600,  # 1 hour
-        )
+            return response
 
-        response.set_cookie(
-            "refresh_token",
-            refresh_token,
-            httponly=True,
-            secure=True,  # HTTPS only
-            samesite="Strict",
-            max_age=7 * 24 * 3600,  # 7 days
-        )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class ClearSecureCookiesView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(request=None, responses={200: MessageSerializer})
+    def post(self, request):
+        """Clear JWT token cookies"""
+        response = Response({"message": "Cookies cleared successfully"})
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
         return response
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(["POST"])
-@permission_classes([AllowAny])
-def clear_secure_cookies(request):
-    """Clear JWT token cookies"""
-    response = Response({"message": "Cookies cleared successfully"})
-
-    # Clear cookies
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
-
-    return response

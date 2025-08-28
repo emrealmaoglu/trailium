@@ -1,7 +1,7 @@
 from rest_framework import viewsets, permissions, decorators, response, status
 from django.db.models import Q
-from .models import TodoList, TodoItem, TodoSubItem
-from .serializers import TodoListSerializer, TodoItemSerializer, TodoSubItemSerializer
+from .models import TodoList, TodoItem, TodoSubItem, TodoPriority
+from .serializers import TodoListSerializer, TodoItemSerializer, TodoSubItemSerializer, TodoPrioritySerializer
 
 
 class IsOwner(permissions.BasePermission):
@@ -15,7 +15,14 @@ class IsOwner(permissions.BasePermission):
         return False
 
 
+class TodoPriorityViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = TodoPriority.objects.all().order_by("sort_order", "id")
+    serializer_class = TodoPrioritySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
 class TodoListViewSet(viewsets.ModelViewSet):
+    queryset = TodoList.objects.all()
     serializer_class = TodoListSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwner]
 
@@ -28,6 +35,7 @@ class TodoListViewSet(viewsets.ModelViewSet):
 
 
 class TodoItemViewSet(viewsets.ModelViewSet):
+    queryset = TodoItem.objects.all()
     serializer_class = TodoItemSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwner]
 
@@ -44,6 +52,7 @@ class TodoItemViewSet(viewsets.ModelViewSet):
 
 
 class TodoSubItemViewSet(viewsets.ModelViewSet):
+    queryset = TodoSubItem.objects.all()
     serializer_class = TodoSubItemSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwner]
 

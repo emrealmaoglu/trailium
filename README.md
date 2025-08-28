@@ -101,20 +101,12 @@ POSTGRES_PASSWORD=trailium
 CORS_ALLOW_ALL_ORIGINS=True  # Only for development!
 ```
 
-### Production Configuration
-
-For production deployment:
-
-1. Copy the environment template:
-```bash
-cp infra/compose/.env.prod.template infra/compose/.env.prod
-```
-
-2. Edit `.env.prod` with your production values
-3. Run the deployment script:
-```bash
-./scripts/deploy_production.sh
-```
+### Removed/Quarantined Deployment Items
+- Dockerfiles and compose moved under `infra/`
+- Production-only settings removed or quarantined
+- Monitoring/observability configs quarantined
+- Build artifacts, logs, heavy media removed
+(This list will be finalized after the audit clean-up PR is merged.)
 
 ## 🧪 **Testing**
 

@@ -140,18 +140,18 @@ const onLogout = async () => {
   align-items: center;
   gap: 12px;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
   border-radius: 12px;
-  color: white;
+  color: var(--c-text);
   cursor: pointer;
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
 }
 
 .user-menu-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--c-surface);
+  border-color: var(--c-border);
   transform: translateY(-1px);
 }
 
@@ -160,7 +160,7 @@ const onLogout = async () => {
   height: 36px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--c-border);
 }
 
 .avatar-image {
@@ -195,11 +195,12 @@ const onLogout = async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 120px;
+  color: var(--c-text);
 }
 
 .user-email {
   font-size: 12px;
-  opacity: 0.8;
+  color: var(--c-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -222,13 +223,14 @@ const onLogout = async () => {
   right: 0;
   top: calc(100% + 8px);
   width: 280px;
-  background: white;
+  background: var(--c-surface);
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--c-border);
   overflow: hidden;
   z-index: 1000;
   animation: slideDown 0.2s ease;
+  color: var(--c-text);
 }
 
 .dropdown-header {
@@ -277,7 +279,7 @@ const onLogout = async () => {
 
 .dropdown-divider {
   height: 1px;
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--c-border);
   margin: 0;
 }
 
@@ -288,7 +290,7 @@ const onLogout = async () => {
 .section-title {
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--c-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 12px;
@@ -302,18 +304,18 @@ const onLogout = async () => {
 
 .theme-btn {
   padding: 8px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--c-border);
   border-radius: 8px;
-  background: #f9fafb;
-  color: #374151;
+  background: var(--c-surface-2);
+  color: var(--c-text);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .theme-btn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: var(--c-surface);
+  border-color: var(--c-border);
 }
 
 .theme-btn.active {
@@ -332,14 +334,14 @@ const onLogout = async () => {
   text-align: left;
   background: none;
   border: none;
-  color: #374151;
+  color: var(--c-text);
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .menu-item:hover {
-  background: #f9fafb;
+  background: var(--c-surface-2);
 }
 
 .logout-button {
@@ -370,45 +372,19 @@ const onLogout = async () => {
   }
 }
 
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  .user-dropdown {
-    background: #1f2937;
-    border-color: #4b5563;
-  }
+/* App dark mode overrides (root has .dark class) */
+:global(.dark) .user-menu-button {
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  color: var(--c-text);
+}
 
-  .dropdown-header {
-    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
-  }
+:global(.dark) .user-menu-button:hover {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+}
 
-  .dropdown-divider {
-    background: #4b5563;
-  }
-
-  .section-title {
-    color: #9ca3af;
-  }
-
-  .theme-btn {
-    background: #374151;
-    border-color: #4b5563;
-    color: #d1d5db;
-  }
-
-  .theme-btn:hover {
-    background: #4b5563;
-  }
-
-  .menu-item {
-    color: #d1d5db;
-  }
-
-  .menu-item:hover {
-    background: #374151;
-  }
-
-  .logout-button:hover {
-    background: #374151;
-  }
+:global(.dark) .user-avatar {
+  border: 2px solid var(--c-border);
 }
 </style>

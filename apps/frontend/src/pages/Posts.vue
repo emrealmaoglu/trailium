@@ -138,22 +138,17 @@ async function createPost() {
   if (!newPostTitle.value.trim() || !newPostBody.value.trim()) return
   creating.value = true
   try {
-    const formData = new FormData()
-    formData.append('title', newPostTitle.value)
-    formData.append('body', newPostBody.value)
-
-    // Add photos if any
-    newPostPhotos.value.forEach((photo, index) => {
-      formData.append(`photos`, photo.file)
-    })
-
-    const post = await json('/api/posts/', {
-      method: 'POST',
-      body: formData
-    })
+    const form = new FormData()
+    form.append('title', newPostTitle.value)
+    form.append('body', newPostBody.value)
+    // Backend supports a single image file on Post
+    if (newPostPhotos.value.length > 0 && newPostPhotos.value[0]?.file) {
+      form.append('image', newPostPhotos.value[0].file)
+    }
+    const post = await json('/api/posts/', { method: 'POST', body: form })
     results.value.unshift(post)
-          clearNewPost()
-      createModalOpen.value = false
+    clearNewPost()
+    createModalOpen.value = false
   } catch (e) {
     errorMsg.value = 'Could not create post.'
     showNotification('Failed to create post', 'error', 5000)
@@ -180,8 +175,8 @@ async function saveEdit() {
       results.value[index] = { ...results.value[index], ...updatedPost }
     }
 
-          editModalOpen.value = false
-      editingPost.value = null
+    editModalOpen.value = false
+    editingPost.value = null
   } catch (e) {
     showNotification('Failed to update post', 'error', 5000)
   } finally {

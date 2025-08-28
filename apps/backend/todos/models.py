@@ -2,6 +2,20 @@ from django.conf import settings
 from django.db import models
 
 
+class TodoPriority(models.Model):
+    key = models.CharField(max_length=32, unique=True)
+    name = models.CharField(max_length=64)
+    color = models.CharField(max_length=16, default="#6b7280")
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    is_default = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["sort_order", "id"]
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.key})"
+
+
 class TodoList(models.Model):
     KIND_CHOICES = (
         ("personal", "Personal"),
@@ -29,6 +43,7 @@ class TodoItem(models.Model):
     description = models.TextField(blank=True)
     is_done = models.BooleanField(default=False)
     due_date = models.DateField(blank=True, null=True)
+    priority = models.ForeignKey(TodoPriority, on_delete=models.PROTECT, related_name="items", null=True, blank=True)
     progress_cached = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

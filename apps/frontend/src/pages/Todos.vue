@@ -63,6 +63,8 @@
             Cancel
           </button>
         </div>
+
+        <p v-if="createError" class="create-error">{{ createError }}</p>
       </form>
     </div>
 
@@ -207,6 +209,8 @@ const showCreateForm = ref(false)
 const creating = ref(false)
 const updating = ref(false)
 const editingTodo = ref(null)
+const selectedListId = ref(null)
+const createError = ref('')
 
 // New todo form
 const newTodo = ref({
@@ -221,7 +225,11 @@ async function fetchTodos() {
   try {
     loading.value = true
     const response = await json('/api/todos/items/')
-    todos.value = response
+    // Inject UI-only defaults (priority) to avoid undefined access in template
+    todos.value = (response || []).map(t => ({
+      ...t,
+      priority: 'medium'
+    }))
   } catch (error) {
     console.error('Failed to fetch todos:', error)
   } finally {
@@ -229,21 +237,50 @@ async function fetchTodos() {
   }
 }
 
+async function ensureDefaultList() {
+  try {
+    const lists = await json('/api/todos/lists/')
+    if (Array.isArray(lists) && lists.length) {
+      selectedListId.value = lists[0].id
+      return
+    }
+    // Create a default list if none exists
+    const created = await json('/api/todos/lists/', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'My Todos', description: '', kind: 'personal' })
+    })
+    selectedListId.value = created.id
+  } catch (e) {
+    console.error('Failed to ensure default todo list:', e)
+  }
+}
+
 async function createTodo() {
+  createError.value = ''
   if (!newTodo.value.title.trim()) return
 
   try {
     creating.value = true
+    if (!selectedListId.value) {
+      await ensureDefaultList()
+    }
+    const payload = {
+      list: selectedListId.value,
+      title: newTodo.value.title,
+      description: newTodo.value.description,
+      due_date: newTodo.value.due_date || null
+    }
     const response = await json('/api/todos/items/', {
       method: 'POST',
-      body: JSON.stringify(newTodo.value)
+      body: JSON.stringify(payload)
     })
 
-    todos.value.unshift(response)
+    todos.value.unshift({ ...response, priority: newTodo.value.priority || 'medium' })
     resetForm()
     showCreateForm.value = false
   } catch (error) {
     console.error('Failed to create todo:', error)
+    createError.value = 'Could not create todo. Please try again.'
   } finally {
     creating.value = false
   }
@@ -327,8 +364,9 @@ function formatDate(dateString) {
 }
 
 // Lifecycle
-onMounted(() => {
-  fetchTodos()
+onMounted(async () => {
+  await ensureDefaultList()
+  await fetchTodos()
 })
 </script>
 
@@ -381,6 +419,12 @@ onMounted(() => {
 .create-form h3 {
   margin: 0 0 20px 0;
   color: var(--c-text);
+}
+
+.create-error {
+  margin-top: 10px;
+  color: #dc2626;
+  font-size: 14px;
 }
 
 .form-group {

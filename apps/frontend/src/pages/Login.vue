@@ -30,11 +30,12 @@ async function submit(e) {
 </script>
 
 <template>
-  <div class="login-form-container">
-    <h2 class="login-title">Sign In</h2>
-    <p class="login-description">Welcome back! Please sign in to your account.</p>
+  <div class="auth-page">
+    <div class="login-form-container card">
+      <h2 class="login-title">Sign In</h2>
+      <p class="login-description">Welcome back! Please sign in to your account.</p>
 
-    <form class="login-form" @submit="submit">
+      <form class="login-form" @submit="submit">
       <div class="form-group">
         <label for="username" class="form-label">Username</label>
         <input
@@ -73,43 +74,58 @@ async function submit(e) {
         </label>
       </div>
 
-      <button
-        type="submit"
-        class="login-button"
-        :disabled="loading"
-      >
-        <span v-if="loading" class="loading-spinner"></span>
-        <span v-else>Sign In</span>
-      </button>
+        <button
+          type="submit"
+          class="login-button"
+          :disabled="loading"
+        >
+          <span v-if="loading" class="loading-spinner"></span>
+          <span v-else>Sign In</span>
+        </button>
 
-      <div v-if="error" class="error-message">
-        {{ error }}
+        <div v-if="error" class="error-message">
+          {{ error }}
+        </div>
+      </form>
+
+      <div class="login-footer">
+        <p class="footer-text">
+          Don't have an account?
+          <router-link to="/auth/register" class="footer-link">Sign up</router-link>
+        </p>
       </div>
-    </form>
-
-    <div class="login-footer">
-      <p class="footer-text">
-        Don't have an account?
-        <router-link to="/auth/register" class="footer-link">Sign up</router-link>
-      </p>
     </div>
   </div>
 </template>
 
 <style scoped>
+.auth-page {
+  min-height: calc(100vh - 64px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--c-bg);
+}
+
 .login-form-container {
   width: 100%;
+  max-width: 420px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
 }
 
 .login-title {
   font-size: 24px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--c-text);
   margin: 0 0 8px 0;
 }
 
 .login-description {
-  color: #6b7280;
+  color: var(--c-text-muted);
   font-size: 14px;
   margin: 0 0 24px 0;
 }
@@ -129,24 +145,25 @@ async function submit(e) {
 .form-label {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--c-text);
   text-align: left;
 }
 
 .form-input {
   padding: 12px 16px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--c-border);
   border-radius: 12px;
   font-size: 14px;
   transition: all 0.2s ease;
-  background: #f9fafb;
+  background: var(--c-surface-2);
+  color: var(--c-text);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #374151;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(55, 65, 81, 0.1);
+  border-color: var(--c-accent);
+  background: var(--c-surface);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
 }
 
 .form-input:disabled {
@@ -170,18 +187,18 @@ async function submit(e) {
 .checkbox-input {
   width: 16px;
   height: 16px;
-  accent-color: #374151;
+  accent-color: var(--c-accent);
 }
 
 .checkbox-text {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--c-text-muted);
 }
 
 .login-button {
-  background: #ffffff;
-  color: #1a1a1a;
-  border: 2px solid #e5e7eb;
+  background: var(--c-accent);
+  color: white;
+  border: 2px solid var(--c-accent);
   padding: 14px 24px;
   border-radius: 12px;
   font-size: 16px;
@@ -195,10 +212,10 @@ async function submit(e) {
 }
 
 .login-button:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #d1d5db;
+  background: var(--c-accent-hover);
+  border-color: var(--c-accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .login-button:disabled {
@@ -211,7 +228,7 @@ async function submit(e) {
   width: 16px;
   height: 16px;
   border: 2px solid transparent;
-  border-top: 2px solid #374151;
+  border-top: 2px solid #ffffff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -230,24 +247,24 @@ async function submit(e) {
   text-align: center;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--c-border);
 }
 
 .footer-text {
-  color: #6b7280;
+  color: var(--c-text-muted);
   font-size: 14px;
   margin: 0;
 }
 
 .footer-link {
-  color: #374151;
+  color: var(--c-accent);
   text-decoration: none;
   font-weight: 500;
 }
 
 .footer-link:hover {
   text-decoration: underline;
-  color: #1a1a1a;
+  color: var(--c-accent-hover);
 }
 
 @keyframes spin {
@@ -256,5 +273,8 @@ async function submit(e) {
   }
 }
 
-/* Pure white theme - no dark mode support */
+/* Responsive */
+@media (max-width: 480px) {
+  .login-form-container { padding: 20px; border-radius: 14px; }
+}
 </style>
