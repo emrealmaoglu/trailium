@@ -89,7 +89,7 @@ const messages = {
 
 const saved = typeof window !== 'undefined' ? (localStorage.getItem('lang') || 'tr') : 'tr'
 
-export const i18n = createI18n({
+const i18n = createI18n({
   legacy: false,
   locale: saved,
   fallbackLocale: 'en',
@@ -101,4 +101,5 @@ export function setLocale(lang: 'tr' | 'en') {
   try { localStorage.setItem('lang', lang) } catch {}
 }
 
+export default i18n
 

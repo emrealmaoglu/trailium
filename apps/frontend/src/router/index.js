@@ -43,12 +43,7 @@ const routes = [
     component: () => import('@/pages/Albums.vue'),
     meta: { requiresAuth: true }
   },
-  {
-    path: '/connections',
-    name: 'Connections',
-    component: () => import('@/pages/Connections.vue'),
-    meta: { requiresAuth: true }
-  },
+  // Connections page is not present; route removed to avoid build error
   // Feed and other features are out of scope for Sprint 0+1
   {
     path: '/profile',

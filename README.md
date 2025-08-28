@@ -162,6 +162,11 @@ npm run dev
 - UI, Türkçe/İngilizce çift dil desteğine sahiptir. Varsayılan dil Türkçe'dir.
 - Dili değiştirmek için sağ üstteki kullanıcı menüsünden Dil bölümünden (🇹🇷/🇺🇸) seçim yapın.
 
+### i18n
+
+- vue-i18n kuruldu (Vue 3 uyumlu v9).
+- Arayüz Türkçe/İngilizce destekler; dil değişimi için Kullanıcı Menüsü → Dil.
+
 ## 🚧 **Known Issues & Limitations**
 
 ### Security Issues (CRITICAL)
