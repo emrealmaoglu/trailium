@@ -175,6 +175,15 @@ npm run dev
 - i18n: TR/EN labels for list, detail, pagination
 - Test: login → go to `/users` → click a card → `/users/:id` → switch language from User Menu
 
+## Todos Backend (Sprint 3.1)
+
+- Endpoints (all under `/api/`):
+  - `GET/POST /api/todo-lists/`, `GET/PATCH/DELETE /api/todo-lists/{id}/`
+  - `GET/POST /api/todo-items/`, `GET/PATCH/DELETE /api/todo-items/{id}/`, `POST /api/todo-items/{id}/toggle-done/`
+  - `GET/POST /api/todo-subitems/`, `GET/PATCH/DELETE /api/todo-subitems/{id}/`
+- Sahiplik: admin tümünü görebilir; normal kullanıcı sadece kendi kayıtlarını görebilir.
+- İlerleme: Alt öğeler tamamlandıkça öğe `progress_cached` güncellenir; liste ilerlemesi serileştiricide ortalama ile hesaplanır.
+- Sayfalama: sayfa numarası ve `page_size` desteklenir.
 ## 🚧 **Known Issues & Limitations**
 
 ### Security Issues (CRITICAL)

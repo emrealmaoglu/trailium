@@ -1,18 +1,14 @@
+"""
+Todos API görünümleri.
+
+Sahiplik bazlı yetkilendirme ve sayfalama desteği içerir.
+"""
+
 from rest_framework import viewsets, permissions, decorators, response, status
-from django.db.models import Q
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from .models import TodoList, TodoItem, TodoSubItem, TodoPriority
 from .serializers import TodoListSerializer, TodoItemSerializer, TodoSubItemSerializer, TodoPrioritySerializer
-
-
-class IsOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if isinstance(obj, TodoList):
-            return obj.user_id == request.user.id
-        if isinstance(obj, TodoItem):
-            return obj.list.user_id == request.user.id
-        if isinstance(obj, TodoSubItem):
-            return obj.parent.list.user_id == request.user.id
-        return False
+from .permissions import IsOwnerOrAdmin
 
 
 class TodoPriorityViewSet(viewsets.ReadOnlyModelViewSet):
@@ -21,10 +17,11 @@ class TodoPriorityViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
+@extend_schema(tags=["Todos"], summary="Todo listeleri", description="Kullanıcıya ait todo listeleri.")
 class TodoListViewSet(viewsets.ModelViewSet):
     queryset = TodoList.objects.all()
     serializer_class = TodoListSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_queryset(self):
         user = self.request.user
@@ -34,10 +31,11 @@ class TodoListViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
+@extend_schema(tags=["Todos"], summary="Todo öğeleri", description="Kullanıcıya ait todo öğeleri.")
 class TodoItemViewSet(viewsets.ModelViewSet):
     queryset = TodoItem.objects.all()
     serializer_class = TodoItemSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_queryset(self):
         user = self.request.user
@@ -51,10 +49,11 @@ class TodoItemViewSet(viewsets.ModelViewSet):
         return response.Response(self.get_serializer(item).data, status=status.HTTP_200_OK)
 
 
+@extend_schema(tags=["Todos"], summary="Alt öğeler", description="Kullanıcıya ait alt öğeler.")
 class TodoSubItemViewSet(viewsets.ModelViewSet):
     queryset = TodoSubItem.objects.all()
     serializer_class = TodoSubItemSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_queryset(self):
         user = self.request.user
