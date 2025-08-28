@@ -1,3 +1,9 @@
+/**
+ * Oturum durumu mağazası (Pinia).
+ *
+ * JWT erişim/yenileme tokenları, "beni hatırla" tercihi ve
+ * hareketsizlikten otomatik çıkış sürelerini yönetir.
+ */
 import { defineStore } from 'pinia'
 import { json } from '@/lib/http'
 
@@ -25,7 +31,9 @@ export const useSessionStore = defineStore('session', {
     initials: (state) => (state.user?.username || '?').slice(0, 1).toUpperCase(),
   },
   actions: {
-    // Secure token storage using httpOnly cookies (best-effort)
+    /**
+     * Tokenları güvenli çerezlere yazmayı dener (yerel geliştirmede opsiyonel).
+     */
     async setSecureTokens(access: string, refresh: string) {
       try {
         // Try to set httpOnly cookies via backend endpoint
@@ -57,6 +65,9 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Kullanıcı tercihlerinin (beni hatırla) depodan okunması.
+     */
     loadFromStorage() {
       // Only store non-sensitive preferences in localStorage
       try {
@@ -71,6 +82,9 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Kullanıcı tercihlerini (beni hatırla) depoya yazar.
+     */
     saveToStorage() {
       // Only store non-sensitive preferences
       try {
@@ -82,6 +96,9 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Tokenları kalıcı depoya kaydeder (sadece rememberMe etkinse).
+     */
     saveTokensToStorage() {
       try {
         if (this.rememberMe && this.access && this.refresh) {
@@ -94,6 +111,9 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Tokenları kalıcı depodan yükler.
+     */
     loadTokensFromStorage() {
       try {
         const raw = localStorage.getItem('authTokens')
@@ -109,10 +129,17 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Kalıcı depodaki token kayıtlarını temizler.
+     */
     clearTokensFromStorage() {
       try { localStorage.removeItem('authTokens') } catch {}
     },
 
+    /**
+     * Kayıt işlemi.
+     * @param payload - kullanıcı adı, parola ve opsiyonel e-posta
+     */
     async register(payload: { username: string; password: string; email?: string }) {
       // Add password strength validation
       if (payload.password.length < 8) {
@@ -136,6 +163,9 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Giriş işlemi, tokenları kaydeder ve me bilgisini getirir.
+     */
     async login(payload: { username: string; password: string; rememberMe?: boolean }) {
       try {
         const data = await json<{ access: string; refresh: string }>('/api/auth/login/', {
@@ -157,6 +187,9 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Erişim tokenını yeniler. Başarısız olursa çıkış yapar.
+     */
     async refreshToken() {
       if (!this.refresh || this.isRefreshing) return false
 
@@ -180,6 +213,9 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Me (aktif kullanıcı) bilgilerini getirir.
+     */
     async fetchMe() {
       try {
         this.user = await json<Me>('/api/users/me/')
@@ -196,6 +232,9 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Oturumu kapatır ve storage'ı temizler.
+     */
     async logout() {
       try {
         await this.clearSecureTokens()
@@ -218,6 +257,10 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Hareketsizlik süresi sonunda otomatik çıkış başlatır.
+     * @param ms - milisaniye cinsinden süre (varsayılan 30 dakika)
+     */
     startIdleTimer(ms = 30 * 60 * 1000) {
       clearTimeout(this.idleTimer)
       this.idleTimer = setTimeout(() => {
@@ -236,6 +279,9 @@ export const useSessionStore = defineStore('session', {
       )
     },
 
+    /**
+     * Sayfa yüklenince mevcut token durumuna göre idle timer'ı başlatır.
+     */
     initIdleTimerOnLoad() {
       if (this.access) {
         const timeout = this.rememberMe ? 8 * 60 * 60 * 1000 : 30 * 60 * 1000
@@ -243,6 +289,9 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    /**
+     * Depodan tercihleri ve tokenları yükler; gerekiyorsa yenileyip oturumu kurar.
+     */
     async initFromStorage() {
       // Load preferences and tokens, then try to fetch user
       this.loadFromStorage()
