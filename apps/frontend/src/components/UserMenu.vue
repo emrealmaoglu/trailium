@@ -53,44 +53,52 @@
       <div class="dropdown-divider"></div>
 
       <div class="dropdown-section">
-        <div class="section-title">Theme</div>
+        <div class="section-title">{{ $t('menu.theme') }}</div>
         <div class="theme-buttons">
           <button
             :class="['theme-btn', { active: currentTheme === 'light' }]"
             @click="setTheme('light')"
           >
-            ☀️ Light
+            ☀️ {{ $t('menu.light') }}
           </button>
           <button
             :class="['theme-btn', { active: currentTheme === 'dark' }]"
             @click="setTheme('dark')"
           >
-            🌙 Dark
+            🌙 {{ $t('menu.dark') }}
           </button>
           <button
             :class="['theme-btn', { active: currentTheme === 'system' }]"
             @click="setTheme('system')"
           >
-            💻 System
+            💻 {{ $t('menu.system') }}
           </button>
         </div>
       </div>
 
       <div class="dropdown-divider"></div>
 
+      <div class="dropdown-section">
+        <div class="section-title">{{ $t('menu.language') }}</div>
+        <div class="theme-buttons">
+          <button class="theme-btn" @click="changeLang('tr')">🇹🇷 {{ $t('menu.turkish') }}</button>
+          <button class="theme-btn" @click="changeLang('en')">🇺🇸 {{ $t('menu.english') }}</button>
+        </div>
+      </div>
+
       <div class="dropdown-menu">
         <button class="menu-item" @click="goProfile">
-          👤 Profile
+          👤 {{ $t('menu.profile') }}
         </button>
         <button class="menu-item" @click="goSettings">
-          ⚙️ Settings
+          ⚙️ {{ $t('menu.settings') }}
         </button>
       </div>
 
       <div class="dropdown-divider"></div>
 
       <button class="logout-button" @click="onLogout">
-        🚪 Logout
+        🚪 {{ $t('menu.logout') }}
       </button>
     </div>
   </div>
@@ -101,6 +109,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import { applyTheme, getStoredTheme } from '@/lib/theme'
+import { setLocale } from '@/i18n'
 
 const router = useRouter()
 const session = useSessionStore()
@@ -110,6 +119,11 @@ const currentTheme = ref(getStoredTheme())
 const setTheme = (t) => {
   applyTheme(t);
   currentTheme.value = t;
+  open.value = false
+}
+
+const changeLang = (lang) => {
+  setLocale(lang)
   open.value = false
 }
 

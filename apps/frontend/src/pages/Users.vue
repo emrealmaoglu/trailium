@@ -1,10 +1,14 @@
 <script setup>
+/**
+ * Kullanıcılar sayfası (stub): i18n ile metinler.
+ */
 import { ref, onMounted, onUnmounted, computed, inject, watch } from 'vue'
 import { json, clearCache } from '@/lib/http'
 import { useSessionStore } from '@/stores/session'
 import UserCard from '@/components/UserCard.vue'
 import UserCardSkeleton from '@/components/UserCardSkeleton.vue'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
+import { useI18n } from 'vue-i18n'
 
 const session = useSessionStore()
 
@@ -43,7 +47,8 @@ const hasActiveFilters = computed(() =>
   filterPremium.value || filterPrivate.value || searchQuery.value.trim()
 )
 
-const title = computed(() => 'All Users')
+const { t } = useI18n()
+const title = computed(() => t('users.title'))
 
 // Notifications
 const showNotification = inject('showNotification')
@@ -232,14 +237,14 @@ watch([filterPremium, filterPrivate], () => {
           class="filter-toggle-btn"
           :class="{ 'active': showFilters }"
         >
-          🔍 Filters
+          🔍 {{ t('users.filters') }}
         </button>
 
         <div class="search-container">
           <input
             v-model="searchQuery"
             @input="handleSearchInput"
-            placeholder="Search users..."
+            :placeholder="t('users.searchPlaceholder')"
             class="search-input"
             type="search"
           />
@@ -257,7 +262,7 @@ watch([filterPremium, filterPrivate], () => {
             v-model="filterPremium"
             class="filter-input"
           />
-          <span class="filter-label">⭐ Premium users only</span>
+          <span class="filter-label">{{ t('users.premiumOnly') }}</span>
         </label>
 
         <label class="filter-checkbox">
@@ -266,11 +271,11 @@ watch([filterPremium, filterPrivate], () => {
             v-model="filterPrivate"
             class="filter-input"
           />
-          <span class="filter-label">🔒 Private accounts only</span>
+          <span class="filter-label">{{ t('users.privateOnly') }}</span>
         </label>
 
         <button @click="clearFilters" class="clear-filters-btn">
-          Clear Filters
+          {{ t('users.clearFilters') }}
         </button>
       </div>
     </div>
@@ -280,7 +285,7 @@ watch([filterPremium, filterPrivate], () => {
       <!-- Loading State -->
       <div v-if="loading" class="loading-state">
         <div class="loading-spinner"></div>
-        <p>Loading users...</p>
+        <p>{{ t('users.loading') }}</p>
       </div>
 
       <!-- Error State -->
@@ -294,7 +299,7 @@ watch([filterPremium, filterPrivate], () => {
         <div class="empty-icon">👥</div>
         <h3>No users found</h3>
         <p>
-          {{ hasActiveFilters ? 'Try adjusting your filters or search terms' : 'No users available yet' }}
+          {{ hasActiveFilters ? t('users.searchPlaceholder') : t('users.emptyHint') }}
         </p>
       </div>
 
@@ -312,7 +317,7 @@ watch([filterPremium, filterPrivate], () => {
     <div class="pagination-section">
       <div class="pagination-info">
         <span class="user-count">
-          Showing {{ filteredUsers.length }} of {{ total }} users
+          {{ t('users.showing') }} {{ filteredUsers.length }} {{ t('users.of') }} {{ total }} {{ t('users.usersWord') }}
         </span>
         <span v-if="hasActiveFilters" class="filtered-indicator">
           (filtered)

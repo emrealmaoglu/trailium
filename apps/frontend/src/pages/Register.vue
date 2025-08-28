@@ -1,11 +1,16 @@
 <script setup>
+/**
+ * Kayıt sayfası: i18n ile iki dilli metinler.
+ */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import { json } from '@/lib/http'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const session = useSessionStore()
+const { t } = useI18n()
 const username = ref('')
 const email = ref('')
 const password = ref('')
@@ -33,14 +38,14 @@ async function submit(e) {
 <template>
   <div class="auth-page">
     <div class="register-card">
-      <h2 class="title">Create your account</h2>
+      <h2 class="title">{{ t('auth.register') }}</h2>
       <form class="form" @submit="submit">
-        <input v-model="username" placeholder="Username" required class="input" />
-        <input v-model="email" placeholder="Email" type="email" class="input" />
-        <input v-model="password" placeholder="Password" type="password" required class="input" />
+        <input v-model="username" :placeholder="t('auth.username')" required class="input" />
+        <input v-model="email" :placeholder="t('auth.email')" type="email" class="input" />
+        <input v-model="password" :placeholder="t('auth.password')" type="password" required class="input" />
         <button type="submit" class="btn" :disabled="loading">
           <span v-if="loading" class="spinner"></span>
-          <span v-else>Create account</span>
+          <span v-else>{{ t('auth.createAccountCta') }}</span>
         </button>
         <div v-if="error" class="error">{{ error }}</div>
       </form>

@@ -1,3 +1,9 @@
+"""
+Kullanıcı görünümleri (views).
+
+NumPy tarzı (Türkçe) docstringler ile API uçları belgelenmiştir.
+"""
+
 import json
 
 from django.contrib.auth import authenticate, get_user_model
@@ -20,21 +26,44 @@ User = get_user_model()
 
 
 class TokenPairSerializer(serializers.Serializer):
+    """JWT erişim ve yenileme token çifti.
+
+    Returns
+    -------
+    dict
+        `access` ve `refresh` alanlarını içerir.
+    """
     access = serializers.CharField()
     refresh = serializers.CharField()
 
 
 class LoginRequestSerializer(serializers.Serializer):
+    """Giriş isteği gövdesi.
+
+    Attributes
+    ----------
+    username : str
+        Kullanıcı adı.
+    password : str
+        Parola.
+    rememberMe : bool, optional
+        Hatırla beni (uzun süreli oturum).
+    """
     username = serializers.CharField()
     password = serializers.CharField()
     rememberMe = serializers.BooleanField(required=False)
 
 
 class MessageSerializer(serializers.Serializer):
+    """Basit mesaj yanıtı."""
     message = serializers.CharField()
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Kullanıcı CRUD ve `me` uç noktalarını sağlar.
+
+    List endpoint'i herkese açık bırakılmıştır (demo amaçlı).
+    """
     queryset = User.objects.all().order_by("id")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -49,6 +78,17 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @decorators.action(detail=False, methods=["get", "patch", "delete"], url_path="me")
     def me(self, request):
+        """Mevcut kullanıcı bilgileri.
+
+        Methods
+        -------
+        GET
+            Kullanıcı bilgilerini döner.
+        PATCH
+            Kısmi profil güncellemesi yapar.
+        DELETE
+            Hesabı pasif hale getirir (soft delete).
+        """
         if request.method == "GET":
             return response.Response(UserSerializer(request.user).data)
         if request.method == "PATCH":
@@ -63,11 +103,19 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class RegisterViewSet(viewsets.GenericViewSet):
+    """Kullanıcı kayıt uç noktası sağlar."""
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
     @decorators.action(detail=False, methods=["post"], url_path="register")
     def register(self, request):
+        """Yeni kullanıcı kaydı oluştur.
+
+        Returns
+        -------
+        Response
+            Oluşturulan kullanıcının serileştirilmiş verileri.
+        """
         ser = self.get_serializer(data=request.data)
         ser.is_valid(raise_exception=True)
         user = ser.save()
@@ -75,10 +123,21 @@ class RegisterViewSet(viewsets.GenericViewSet):
 
 
 class LogoutView(APIView):
+    """Yenileme token'ını kara listeye ekleyerek çıkış yapar.
+
+    Not: Kara listeleme başarısız olsa dahi 205 döner (istemciyi temizlemek için).
+    """
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(request=TokenPairSerializer, responses={205: OpenApiResponse(None)})
     def post(self, request):
+        """Çıkış isteği.
+
+        Request JSON
+        ------------
+        refresh : str
+            Yenileme token değeri.
+        """
 
         refresh = request.data.get("refresh")
         if not refresh:
@@ -95,10 +154,24 @@ class LogoutView(APIView):
 
 
 class LoginView(APIView):
+    """Kullanıcı girişi yapar ve JWT token çifti döner."""
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(request=LoginRequestSerializer, responses={200: TokenPairSerializer, 401: OpenApiResponse(None)})
     def post(self, request):
+        """Giriş isteği.
+
+        Request JSON
+        ------------
+        username : str
+        password : str
+        rememberMe : bool, optional
+
+        Returns
+        -------
+        Response
+            `{ "access": str, "refresh": str }`
+        """
         from datetime import timedelta
 
         from rest_framework_simplejwt.tokens import RefreshToken
@@ -134,10 +207,12 @@ class LoginView(APIView):
 
 
 class ChangePasswordView(APIView):
+    """Şifre değiştirme uç noktası."""
     permission_classes = [permissions.IsAuthenticated]
 
     @extend_schema(request=PasswordChangeSerializer, responses={204: OpenApiResponse(None)})
     def post(self, request):
+        """Şifreyi günceller. 204 ile sonuçlanır."""
         ser = PasswordChangeSerializer(data=request.data, context={"request": request})
         ser.is_valid(raise_exception=True)
         user = request.user
@@ -147,11 +222,15 @@ class ChangePasswordView(APIView):
 
 
 class SetSecureCookiesView(APIView):
+    """HTTP-only çerezlere token yazılmasını dener (yerel demo için opsiyonel)."""
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(request=TokenPairSerializer, responses={200: MessageSerializer})
     def post(self, request):
-        """Set httpOnly cookies for JWT tokens"""
+        """JWT tokenlarını httpOnly çerezlere yazar.
+
+        Not: Yerel geliştirmede `secure` çerezler tarayıcı tarafından reddedilebilir.
+        """
         try:
             data = request.data if isinstance(request.data, dict) else {}
             access_token = data.get("access")
@@ -190,6 +269,7 @@ class SetSecureCookiesView(APIView):
 
 
 class ClearSecureCookiesView(APIView):
+    """HTTP-only çerezlerdeki tokenları temizler (opsiyonel)."""
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(request=None, responses={200: MessageSerializer})

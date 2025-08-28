@@ -8,6 +8,10 @@ from django.utils import timezone
 
 
 class User(AbstractUser):
+    """Özel Kullanıcı modeli.
+
+    NumPy tarzı (Türkçe) docstring ile alanların amacı açıklanmıştır.
+    """
     # Gender choices
     GENDER_CHOICES = [
         ("male", "Male"),
@@ -129,7 +133,13 @@ class User(AbstractUser):
         return self.username
 
     def clean(self):
-        """Custom validation"""
+        """Özel doğrulamalar.
+
+        Raises
+        ------
+        ValidationError
+            E-posta, kullanıcı adı veya tam ad kısıtlarını ihlal ettiğinde.
+        """
         super().clean()
 
         # Validate email format
@@ -160,7 +170,7 @@ class User(AbstractUser):
                 raise ValidationError({"full_name": "This name is not allowed."})
 
     def save(self, *args, **kwargs):
-        """Custom save method with validation"""
+        """Doğrulamalarla birlikte kaydetme işlemi."""
         self.clean()
 
         # Ensure username is lowercase
@@ -184,12 +194,12 @@ class User(AbstractUser):
 
     @property
     def display_name(self):
-        """Get display name for UI"""
+        """Arayüzde gösterilecek isim değeri."""
         return self.full_name or self.username
 
     @property
     def initials(self):
-        """Get user initials for avatar"""
+        """Avatar için kullanıcı baş harfleri."""
         if self.full_name:
             names = self.full_name.split()
             if len(names) >= 2:
@@ -199,11 +209,11 @@ class User(AbstractUser):
 
     @property
     def is_verified(self):
-        """Check if user has verified contact methods"""
+        """Kullanıcının doğrulanmış iletişim bilgisi var mı?"""
         return self.email_verified or self.phone_verified
 
     def get_public_profile(self):
-        """Get public profile data based on privacy settings"""
+        """Gizlilik ayarlarına göre herkese açık profil verisi döner."""
         if self.profile_privacy == "private":
             return {
                 "id": self.id,

@@ -155,6 +155,13 @@ npm run dev
 2) /login → sign in (remember me optional)
 3) Redirected to /users stub → open AvatarMenu → Logout
 
+## 🗂️ Documentation & i18n Updates
+
+- All backend modules, modeller, serializer ve view'ler Türkçe NumPy tarzı docstring ile açıklandı.
+- Frontend bileşenleri ve Pinia store'ları için JSDoc yorumları eklendi (asgari düzeyde).
+- UI, Türkçe/İngilizce çift dil desteğine sahiptir. Varsayılan dil Türkçe'dir.
+- Dili değiştirmek için sağ üstteki kullanıcı menüsünden Dil bölümünden (🇹🇷/🇺🇸) seçim yapın.
+
 ## 🚧 **Known Issues & Limitations**
 
 ### Security Issues (CRITICAL)

@@ -9,7 +9,13 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 
 def health_check(request):
-    """Always-on health endpoint for local demo."""
+    """Sağlık kontrolü (her zaman 200).
+
+    Returns
+    -------
+    JsonResponse
+        {"status": "ok"}
+    """
     return JsonResponse({"status": "ok"}, status=200)
 
 

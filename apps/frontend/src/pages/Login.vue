@@ -1,10 +1,15 @@
 <script setup>
+/**
+ * Giriş sayfası: i18n ile iki dilli metinler.
+ */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const session = useSessionStore()
+const { t } = useI18n()
 const username = ref('')
 const password = ref('')
 const rememberMe = ref(true)
@@ -32,31 +37,31 @@ async function submit(e) {
 <template>
   <div class="auth-page">
     <div class="login-form-container card">
-      <h2 class="login-title">Sign In</h2>
-      <p class="login-description">Welcome back! Please sign in to your account.</p>
+      <h2 class="login-title">{{ t('auth.login') }}</h2>
+      <p class="login-description">{{ t('auth.welcomeBack') }}</p>
 
       <form class="login-form" @submit="submit">
       <div class="form-group">
-        <label for="username" class="form-label">Username</label>
+        <label for="username" class="form-label">{{ t('auth.username') }}</label>
         <input
           id="username"
           v-model="username"
           type="text"
           class="form-input"
-          placeholder="Enter your username"
+          placeholder="{{ t('auth.username') }}"
           required
           :disabled="loading"
         />
       </div>
 
       <div class="form-group">
-        <label for="password" class="form-label">Password</label>
+        <label for="password" class="form-label">{{ t('auth.password') }}</label>
         <input
           id="password"
           v-model="password"
           type="password"
           class="form-input"
-          placeholder="Enter your password"
+          placeholder="{{ t('auth.password') }}"
           required
           :disabled="loading"
         />
@@ -70,7 +75,7 @@ async function submit(e) {
             class="checkbox-input"
             :disabled="loading"
           />
-          <span class="checkbox-text">Remember me</span>
+          <span class="checkbox-text">{{ t('auth.rememberMe') }}</span>
         </label>
       </div>
 
@@ -80,7 +85,7 @@ async function submit(e) {
           :disabled="loading"
         >
           <span v-if="loading" class="loading-spinner"></span>
-          <span v-else>Sign In</span>
+          <span v-else>{{ t('auth.signInCta') }}</span>
         </button>
 
         <div v-if="error" class="error-message">
@@ -90,8 +95,8 @@ async function submit(e) {
 
       <div class="login-footer">
         <p class="footer-text">
-          Don't have an account?
-          <router-link to="/auth/register" class="footer-link">Sign up</router-link>
+          {{ t('auth.haveNoAccount') }}
+          <router-link to="/register" class="footer-link">{{ t('auth.register') }}</router-link>
         </p>
       </div>
     </div>
