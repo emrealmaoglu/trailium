@@ -1,226 +1,30 @@
 <script setup>
 /**
- * Kullanıcılar sayfası (stub): i18n ile metinler.
+ * Kullanıcılar sayfası: liste + sayfalama + durumlar.
  */
-import { ref, onMounted, onUnmounted, computed, inject, watch } from 'vue'
-import { json, clearCache } from '@/lib/http'
-import { useSessionStore } from '@/stores/session'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useUsersStore } from '@/stores/users'
 import UserCard from '@/components/UserCard.vue'
-import UserCardSkeleton from '@/components/UserCardSkeleton.vue'
-import Breadcrumbs from '@/components/Breadcrumbs.vue'
+import Pagination from '@/components/Pagination.vue'
 import { useI18n } from 'vue-i18n'
-
-const session = useSessionStore()
-
-// State management
-const loading = ref(true)
-const users = ref([])
-const errorMsg = ref('')
-const page = ref(1)
-const nextUrl = ref('')
-const prevUrl = ref('')
-const total = ref(0)
-
-// Search and filters
-const searchQuery = ref('')
-const searchTimeout = ref(null)
-const showFilters = ref(false)
-const filterPremium = ref(false)
-const filterPrivate = ref(false)
-
-// Computed properties
-const filteredUsers = computed(() => {
-  let filtered = users.value
-
-  if (filterPremium.value) {
-    filtered = filtered.filter(u => u.is_premium)
-  }
-
-  if (filterPrivate.value) {
-    filtered = filtered.filter(u => u.is_private)
-  }
-
-  return filtered
-})
-
-const hasActiveFilters = computed(() =>
-  filterPremium.value || filterPrivate.value || searchQuery.value.trim()
-)
 
 const { t } = useI18n()
 const title = computed(() => t('users.title'))
+const usersStore = useUsersStore()
+const route = useRoute()
+const router = useRouter()
 
-// Notifications
-const showNotification = inject('showNotification')
+const localPage = ref(Number(route.query.page ?? 1) || 1)
 
-// User mapping function
-function mapUser(user) {
-  return {
-    id: user.id,
-    name: user.full_name || user.username,
-    email: user.email,
-    phone: user.phone || 'No phone',
-    addressText: user.address || '',
-    companyName: user.company_name || '',
-    website: user.website || '',
-    is_premium: user.is_premium || false,
-    is_private: user.is_private || false,
-    avatar: user.avatar || '',
-    about: user.about || '',
-    created_at: user.date_joined || user.created_at
-  }
-}
-
-// Utility functions
-function getPageFromUrl(url) {
-  try {
-    const urlObj = new URL(url)
-    const pageParam = urlObj.searchParams.get('page')
-    return pageParam ? parseInt(pageParam, 10) : null
-  } catch {
-    return null
-  }
-}
-
-function validateSearchQuery(query) {
-  return query.trim().length >= 2
-}
-
-// API functions
-async function fetchData(input = `/api/users/?page=${page.value}`) {
-  loading.value = true
-  errorMsg.value = ''
-
-  try {
-    const payload = await json(input)
-    const data = Array.isArray(payload) ? payload : payload.results || []
-
-    // Filter out current user and admin users
-    const currentUser = session.user?.username
-    const filteredData = data.filter(user =>
-      user.username !== currentUser &&
-      !user.is_superuser &&
-      !user.is_staff
-    )
-
-    users.value = filteredData.map(mapUser)
-
-    if (!Array.isArray(payload)) {
-      nextUrl.value = payload.next || ''
-      prevUrl.value = payload.previous || ''
-      total.value = payload.count || 0
-
-      const inferredPage = getPageFromUrl(input)
-      if (inferredPage) page.value = inferredPage
-    }
-
-    if (users.value.length === 0) {
-      errorMsg.value = 'No other users available yet.'
-    }
-
-  } catch (error) {
-    console.error('Failed to fetch users:', error)
-    errorMsg.value = 'Could not load users. Please retry.'
-    showNotification('Failed to load users', 'error', 5000)
-  } finally {
-    loading.value = false
-  }
-}
-
-async function searchUsers() {
-  const query = searchQuery.value.trim()
-
-  if (!validateSearchQuery(query)) {
-    return
-  }
-
-  try {
-    loading.value = true
-    const payload = await json(`/api/users/?search=${encodeURIComponent(query)}`)
-    const data = Array.isArray(payload) ? payload : payload.results || []
-
-    // Filter out admin users from search results
-    const filteredData = data.filter(user =>
-      !user.is_superuser &&
-      !user.is_staff
-    )
-
-    users.value = filteredData.map(mapUser)
-    nextUrl.value = payload.next || ''
-    prevUrl.value = payload.previous || ''
-    total.value = payload.count || 0
-    page.value = 1
-
-  } catch (error) {
-    console.error('Search failed:', error)
-    errorMsg.value = 'Search failed. Please try again.'
-    showNotification('Search failed', 'error', 5000)
-  } finally {
-    loading.value = false
-  }
-}
-
-// Event handlers
-function handleSearchInput() {
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value)
-  }
-
-  searchTimeout.value = setTimeout(() => {
-    if (searchQuery.value.trim()) {
-      searchUsers()
-    } else {
-      fetchData()
-    }
-  }, 300) // Reduced from 500ms for better UX
-}
-
-function nextPage() {
-  if (nextUrl.value && !loading.value) {
-    fetchData(nextUrl.value)
-  }
-}
-
-function prevPage() {
-  if (prevUrl.value && !loading.value) {
-    fetchData(prevUrl.value)
-  }
-}
-
-function clearFilters() {
-  filterPremium.value = false
-  filterPrivate.value = false
-  searchQuery.value = ''
-
-  // Clear cache for users endpoint
-  clearCache('/api/users/')
-
-  fetchData()
-}
-
-// Lifecycle
-onMounted(() => {
-  fetchData()
-
-  // Refresh data when tab becomes visible
-  const onVisibilityChange = () => {
-    if (document.visibilityState === 'visible') {
-      fetchData(`/api/users/?page=${page.value}`)
-    }
-  }
-
-  document.addEventListener('visibilitychange', onVisibilityChange)
-
-  onUnmounted(() => {
-    document.removeEventListener('visibilitychange', onVisibilityChange)
-  })
+onMounted(async () => {
+  await usersStore.fetchUsers({ page: localPage.value })
 })
 
-// Watch for filter changes to update cache
-watch([filterPremium, filterPrivate], () => {
-  // Clear cache when filters change
-  clearCache('/api/users/')
-})
+function onChangePage(p) {
+  usersStore.fetchUsers({ page: p })
+  router.push({ path: '/users', query: { page: String(p) } })
+}
 </script>
 
 <template>
@@ -283,30 +87,29 @@ watch([filterPremium, filterPrivate], () => {
     <!-- Content Section -->
     <div class="users-content">
       <!-- Loading State -->
-      <div v-if="loading" class="loading-state">
+      <div v-if="usersStore.loading" class="loading-state">
         <div class="loading-spinner"></div>
         <p>{{ t('users.loading') }}</p>
       </div>
 
       <!-- Error State -->
-      <div v-else-if="errorMsg" class="error-state">
+      <div v-else-if="usersStore.error" class="error-state">
         <div class="error-icon">❌</div>
-        <p>{{ errorMsg }}</p>
+        <p>{{ t('users.error') }}</p>
+        <button class="filter-toggle-btn" @click="() => usersStore.fetchUsers({ page: localPage })">{{ t('users.retry') }}</button>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="filteredUsers.length === 0" class="empty-state">
+      <div v-else-if="usersStore.users.length === 0" class="empty-state">
         <div class="empty-icon">👥</div>
-        <h3>No users found</h3>
-        <p>
-          {{ hasActiveFilters ? t('users.searchPlaceholder') : t('users.emptyHint') }}
-        </p>
+        <h3>{{ t('users.emptyTitle') }}</h3>
+        <p>{{ t('users.empty') }}</p>
       </div>
 
       <!-- Users Grid -->
       <div v-else class="users-grid" data-testid="users-grid">
         <UserCard
-          v-for="user in filteredUsers"
+          v-for="user in usersStore.users"
           :key="user.id"
           :user="user"
         />
@@ -324,27 +127,12 @@ watch([filterPremium, filterPrivate], () => {
         </span>
       </div>
 
-      <div class="pagination-controls">
-        <button
-          :disabled="!prevUrl || loading"
-          @click="prevPage"
-          class="pagination-btn"
-          :class="{ 'disabled': !prevUrl || loading }"
-        >
-          ← Previous
-        </button>
-
-        <span class="page-info">Page {{ page }}</span>
-
-        <button
-          :disabled="!nextUrl || loading"
-          @click="nextPage"
-          class="pagination-btn"
-          :class="{ 'disabled': !nextUrl || loading }"
-        >
-          Next →
-        </button>
-      </div>
+      <Pagination
+        :page="usersStore.page"
+        :total-pages="usersStore.totalPages"
+        :disabled="usersStore.loading"
+        @update:page="onChangePage"
+      />
     </div>
   </div>
 </template>

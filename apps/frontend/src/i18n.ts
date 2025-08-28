@@ -28,7 +28,11 @@ const messages = {
       emptyHint: 'Henüz kullanıcı yok',
       showing: 'Gösterilen',
       of: 'toplam',
-      usersWord: 'kullanıcı'
+      usersWord: 'kullanıcı',
+      empty: 'Henüz kullanıcı bulunamadı',
+      error: 'Kullanıcılar yüklenemedi',
+      retry: 'Tekrar dene',
+      pagination: { prev: 'Önceki', next: 'Sonraki' }
     },
     menu: {
       profile: 'Profil',
@@ -41,6 +45,11 @@ const messages = {
       language: 'Dil',
       turkish: 'Türkçe',
       english: 'İngilizce'
+    },
+    user: {
+      notFound: 'Kullanıcı bulunamadı',
+      comingSoon: 'Yakında',
+      tabs: { todos: 'Yapılacaklar', posts: 'Gönderiler', albums: 'Albümler' }
     }
   },
   en: {
@@ -70,7 +79,11 @@ const messages = {
       emptyHint: 'No users available yet',
       showing: 'Showing',
       of: 'of',
-      usersWord: 'users'
+      usersWord: 'users',
+      empty: 'No users yet',
+      error: 'Failed to load users',
+      retry: 'Retry',
+      pagination: { prev: 'Previous', next: 'Next' }
     },
     menu: {
       profile: 'Profile',
@@ -83,6 +96,11 @@ const messages = {
       language: 'Language',
       turkish: 'Turkish',
       english: 'English'
+    },
+    user: {
+      notFound: 'User not found',
+      comingSoon: 'Coming soon',
+      tabs: { todos: 'Todos', posts: 'Posts', albums: 'Albums' }
     }
   }
 }

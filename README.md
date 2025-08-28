@@ -167,6 +167,14 @@ npm run dev
 - vue-i18n kuruldu (Vue 3 uyumlu v9).
 - Arayüz Türkçe/İngilizce destekler; dil değişimi için Kullanıcı Menüsü → Dil.
 
+## Users Module (Sprint 2)
+
+- Routes: `/users` (list), `/users/:id` (detail header with tab placeholders)
+- Pagination: number-based via `/api/users/?page=&page_size=` (page size=10)
+- States: loading skeleton, empty messaging, error with retry
+- i18n: TR/EN labels for list, detail, pagination
+- Test: login → go to `/users` → click a card → `/users/:id` → switch language from User Menu
+
 ## 🚧 **Known Issues & Limitations**
 
 ### Security Issues (CRITICAL)

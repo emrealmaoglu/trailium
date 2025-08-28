@@ -17,7 +17,7 @@ const props = defineProps({
 const router = useRouter()
 const goToDetail = () => {
   if (props.user && props.user.id != null) {
-    router.push(`/users/${props.user.id}/todos`)
+    router.push(`/users/${props.user.id}`)
   }
 }
 
