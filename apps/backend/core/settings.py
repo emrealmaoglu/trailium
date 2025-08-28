@@ -21,26 +21,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+# Local demo defaults only
+DEBUG = True
 
-# Security: Force DEBUG=False in production
-if os.environ.get("ENVIRONMENT") == "production":
-    DEBUG = False
+# Local demo secret key; can be overridden via env
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-dev-key")
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
-if not SECRET_KEY:
-    # Use a default key for local/dev, but require env var in production
-    if os.environ.get("ENVIRONMENT") == "production":
-        raise ValueError("SECRET_KEY environment variable must be set")
-    SECRET_KEY = "django-insecure-dev-key"
-
-# Validate SECRET_KEY in production
-if not DEBUG and "django-insecure" in SECRET_KEY:
-    raise ValueError("SECRET_KEY must be properly set in production environment")
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -64,7 +51,7 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 20,
+    "PAGE_SIZE": 10,
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -83,9 +70,9 @@ REST_FRAMEWORK = {
     ],
 }
 
-# SimpleJWT base settings; login view will override refresh lifetime per-request
+# SimpleJWT local demo settings
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
@@ -111,24 +98,8 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
 }
 
-# Security: Restrict allowed hosts
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-
-# CORS Settings - SECURE BY DEFAULT
-CORS_ALLOW_ALL_ORIGINS = False  # Never allow all origins in production
-
-# Only allow specific origins
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
-).split(",")
-
-# Add production domains from environment if specified
-prod_origins = os.environ.get("PROD_CORS_ORIGINS", "")
-if prod_origins:
-    CORS_ALLOWED_ORIGINS.extend(
-        [origin.strip() for origin in prod_origins.split(",") if origin.strip()]
-    )
-
+# CORS - local demo permissive
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # Middleware Configuration
@@ -163,23 +134,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-# Security Settings
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = "DENY"
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-
-# Cookie Settings
-SESSION_COOKIE_SECURE = (
-    os.environ.get("ENVIRONMENT") == "production"
-)  # True in production with HTTPS
+# Security/Cookie settings simplified for local demo
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SECURE = (
-    os.environ.get("ENVIRONMENT") == "production"
-)  # True in production with HTTPS
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
 
@@ -333,22 +290,21 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
-# Performance Monitoring
-PERFORMANCE_MONITORING = {
-    "ENABLED": True,
-    "LOG_SLOW_QUERIES": True,
-    "SLOW_QUERY_THRESHOLD": 100,  # milliseconds
-    "LOG_REQUEST_TIMES": True,
-    "REQUEST_TIME_THRESHOLD": 500,  # milliseconds
-}
-
-# Rate Limiting
-RATE_LIMITING = {
-    "ENABLED": True,
-    "DEFAULT_RATE": "100/hour",
-    "ANONYMOUS_RATE": "50/hour",
-    "USER_RATE": "1000/hour",
-}
+# Disable prod-like monitoring/rate limiting for local demo
+PERFORMANCE_MONITORING = {"ENABLED": False}
+RATE_LIMITING = {"ENABLED": False}
 
 # Custom User model
 AUTH_USER_MODEL = "users.User"
+
+# Database: Local PostgreSQL only (no SQLite fallback)
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRES_DB", "trailium"),
+        "USER": os.environ.get("POSTGRES_USER", "trailium"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "trailium"),
+        "HOST": os.environ.get("POSTGRES_HOST", "127.0.0.1"),
+        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+    }
+}

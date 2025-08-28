@@ -4,7 +4,7 @@ import { useSessionStore } from '@/stores/session'
 const routes = [
   {
     path: '/',
-    redirect: '/feed',
+    redirect: '/users',
     meta: { requiresAuth: true } // Default for authenticated section
   },
   {
@@ -49,44 +49,23 @@ const routes = [
     component: () => import('@/pages/Connections.vue'),
     meta: { requiresAuth: true }
   },
-  {
-    path: '/feed',
-    name: 'Feed',
-    component: () => import('@/pages/Feed.vue'),
-    meta: { requiresAuth: true }
-  },
+  // Feed and other features are out of scope for Sprint 0+1
   {
     path: '/profile',
     name: 'Profile',
     component: () => import('@/pages/Profile.vue'),
     meta: { requiresAuth: true }
   },
+  // Settings remains but not implemented in this sprint
+  // AdminDanger and CookieTest are out of scope
   {
-    path: '/settings',
-    name: 'Settings',
-    component: () => import('@/pages/Settings.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/admin-danger',
-    name: 'AdminDanger',
-    component: () => import('@/pages/AdminDanger.vue'),
-    meta: { requiresAuth: true, requiresAdmin: true }
-  },
-  {
-    path: '/cookie-test',
-    name: 'CookieTest',
-    component: () => import('@/pages/CookieTest.vue'),
-    meta: { requiresAuth: true, requiresAdmin: true }
-  },
-  {
-    path: '/auth/login',
+    path: '/login',
     name: 'Login',
     component: () => import('@/pages/Login.vue'),
     meta: { requiresAuth: false }
   },
   {
-    path: '/auth/register',
+    path: '/register',
     name: 'Register',
     component: () => import('@/pages/Register.vue'),
     meta: { requiresAuth: false }
@@ -103,7 +82,7 @@ router.beforeEach((to, from, next) => {
 
   // Check if route requires authentication
   if (to.meta.requiresAuth && !session.isLoggedIn) {
-    next('/auth/login')
+    next('/login')
     return
   }
 
@@ -114,7 +93,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // If user is logged in and trying to access auth pages, redirect to home
-  if (session.isLoggedIn && (to.path === '/auth/login' || to.path === '/auth/register')) {
+  if (session.isLoggedIn && (to.path === '/login' || to.path === '/register')) {
     next('/')
     return
   }

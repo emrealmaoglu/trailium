@@ -126,6 +126,35 @@ npm run test:coverage
 
 **Note: Test coverage is currently incomplete and needs significant improvement.**
 
+## 🧰 Local Run (PostgreSQL)
+
+Backend
+
+```bash
+cd apps/backend
+python -m venv .venv && source .venv/bin/activate
+cp .env.example .env
+# ensure a local Postgres is running and matches .env
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
+```
+
+Frontend
+
+```bash
+cd apps/frontend
+cp .env.example .env  # contains VITE_API_BASE_URL=http://127.0.0.1:8000
+npm install
+npm run dev
+```
+
+3-minute demo
+
+1) Open FE → /register → create user
+2) /login → sign in (remember me optional)
+3) Redirected to /users stub → open AvatarMenu → Logout
+
 ## 🚧 **Known Issues & Limitations**
 
 ### Security Issues (CRITICAL)
@@ -243,9 +272,6 @@ POST   /api/posts/             # Create post
 
 **Note: API documentation is incomplete. Use the health endpoint to verify service status.**
 
-## 📄 **License**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 **Acknowledgments**
 
