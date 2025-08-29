@@ -73,6 +73,18 @@ const messages = {
     photos: {
       addPhoto: 'Fotoğraf ekle'
     },
+    settings: {
+      title: 'Ayarlar',
+      name: 'Ad Soyad',
+      email: 'E-posta',
+      password: 'Şifre (demo)',
+      visibility: 'Görünürlük',
+      private: 'Gizli hesap',
+      premium: 'Premium',
+      save: 'Kaydet',
+      success: 'Kaydedildi',
+      error: 'Hata oluştu'
+    },
     todos: {
       title: 'Yapılacaklar',
       addList: 'Liste ekle',
@@ -165,6 +177,18 @@ const messages = {
     },
     photos: {
       addPhoto: 'Add photo'
+    },
+    settings: {
+      title: 'Settings',
+      name: 'Full name',
+      email: 'Email',
+      password: 'Password (demo)',
+      visibility: 'Visibility',
+      private: 'Private account',
+      premium: 'Premium',
+      save: 'Save',
+      success: 'Saved',
+      error: 'Error occurred'
     },
     todos: {
       title: 'Todos',

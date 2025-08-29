@@ -30,9 +30,10 @@
     <div class="tabs">
       <button class="tab">{{ t('user.tabs.todos') }}</button>
       <button class="tab">{{ t('user.tabs.posts') }}</button>
-      <button class="tab active">{{ t('user.tabs.albums') }}</button>
+      <button class="tab">{{ t('user.tabs.albums') }}</button>
+      <button class="tab active">{{ t('settings.title') }}</button>
     </div>
-    <UserAlbums />
+    <UserSettings />
   </div>
 </template>
 
@@ -42,7 +43,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { json } from '@/lib/http'
 import { useI18n } from 'vue-i18n'
-import UserAlbums from './UserAlbums.vue'
+import UserSettings from './UserSettings.vue'
 
 const route = useRoute()
 const { t } = useI18n()

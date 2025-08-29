@@ -20,6 +20,8 @@ class UserSerializer(serializers.ModelSerializer):
     dict
         Kullanıcıya ait temel alanlar (id, username, email vb.).
     """
+    visibility = serializers.CharField(source="profile_privacy", read_only=True)
+
     class Meta:
         model = User
         fields = [
@@ -34,6 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
             "about",
             "is_premium",
             "is_private",
+            "visibility",
             "is_superuser",
             "is_staff",
         ]
@@ -83,6 +86,9 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
     Opsiyonel alanlarla kısmi güncellemeleri destekler.
     """
+    visibility = serializers.ChoiceField(
+        choices=("public", "friends", "private"), required=False, source="profile_privacy"
+    )
     class Meta:
         model = User
         fields = [
@@ -94,6 +100,8 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             "address",
             "about",
             "is_private",
+            "is_premium",
+            "visibility",
         ]
         extra_kwargs = {f: {"required": False} for f in fields}
 
