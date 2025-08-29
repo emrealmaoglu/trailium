@@ -188,6 +188,11 @@ Hızlı deneme
 3) Birkaç öğe ekleyin, bir öğeye alt öğeler ekleyin
 4) Alt öğeyi ve öğeyi toggle yapın → % ilerleme güncellenir
 5) URL’de ?page=2 deneyin → sayfa değişir
+
+## Posts Module (Sprint 4)
+
+- Backend: /api/posts/ CRUD, /api/posts/{id}/like (POST)/unlike (DELETE), /api/posts/{id}/comments/ (GET/POST)
+- Frontend: /users/:id → Posts sekmesi; liste, modal detay, yorumlar ve beğeni; sayfalama ve i18n.
 ## Todos Backend (Sprint 3.1)
 
 - Endpoints (all under `/api/`):

@@ -51,6 +51,18 @@ const messages = {
       comingSoon: 'Yakında',
       tabs: { todos: 'Yapılacaklar', posts: 'Gönderiler', albums: 'Albümler' }
     },
+    posts: {
+      title: 'Gönderiler',
+      addPost: 'Gönderi ekle',
+      empty: 'Henüz gönderi yok',
+      error: 'Bir hata oluştu',
+      like: 'Beğen',
+      unlike: 'Beğeniyi geri al',
+      seeMore: 'Devamını gör',
+      comments: 'Yorumlar',
+      addComment: 'Yorum ekle',
+      comment: 'Yorum Yap'
+    },
     todos: {
       title: 'Yapılacaklar',
       addList: 'Liste ekle',
@@ -121,6 +133,18 @@ const messages = {
       notFound: 'User not found',
       comingSoon: 'Coming soon',
       tabs: { todos: 'Todos', posts: 'Posts', albums: 'Albums' }
+    },
+    posts: {
+      title: 'Posts',
+      addPost: 'Add post',
+      empty: 'No posts yet',
+      error: 'Something went wrong',
+      like: 'Like',
+      unlike: 'Unlike',
+      seeMore: 'See more',
+      comments: 'Comments',
+      addComment: 'Add a comment',
+      comment: 'Comment'
     },
     todos: {
       title: 'Todos',
