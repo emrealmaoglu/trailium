@@ -191,6 +191,23 @@ Hızlı deneme
 
 ## Posts Module (Sprint 4)
 - ## Albums Module (Sprint 5)
+- ## Demo Seed (Sprint 8)
+
+Yerel demo içeriği oluşturma/sıfırlama:
+
+```bash
+cd apps/backend
+source .venv/bin/activate  # opsiyonel
+python manage.py seed_demo
+# sıfırlamak için
+python manage.py reset_demo
+```
+
+Varsayılan girişler: `demo01@example.test` / `Demo1234!` (02..25 varyantları mevcuttur).
+
+Notlar:
+- Deterministik tohum; komut tekrar çalıştırılabilir.
+- Küçük hacimli verilerle UI hızlı kalır (kullanıcılar, gönderiler, yorumlar/like, yapılacaklar, albümler/fotoğraflar, takip).
 
 - Backend: /api/albums/ CRUD; /api/albums/{id}/photos/ (GET/POST)
 - Frontend: /users/:id → Albums sekmesi; liste, modal detay, fotoğraf ekleme/silme (sadece sahip), i18n ve sayfalama.
