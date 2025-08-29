@@ -63,6 +63,16 @@ const messages = {
       addComment: 'Yorum ekle',
       comment: 'Yorum Yap'
     },
+    albums: {
+      title: 'Albümler',
+      addAlbum: 'Albüm ekle',
+      empty: 'Henüz albüm yok',
+      error: 'Bir hata oluştu',
+      photos: 'fotoğraf'
+    },
+    photos: {
+      addPhoto: 'Fotoğraf ekle'
+    },
     todos: {
       title: 'Yapılacaklar',
       addList: 'Liste ekle',
@@ -145,6 +155,16 @@ const messages = {
       comments: 'Comments',
       addComment: 'Add a comment',
       comment: 'Comment'
+    },
+    albums: {
+      title: 'Albums',
+      addAlbum: 'Add album',
+      empty: 'No albums yet',
+      error: 'Something went wrong',
+      photos: 'photos'
+    },
+    photos: {
+      addPhoto: 'Add photo'
     },
     todos: {
       title: 'Todos',

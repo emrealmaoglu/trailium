@@ -190,6 +190,10 @@ Hızlı deneme
 5) URL’de ?page=2 deneyin → sayfa değişir
 
 ## Posts Module (Sprint 4)
+- ## Albums Module (Sprint 5)
+
+- Backend: /api/albums/ CRUD; /api/albums/{id}/photos/ (GET/POST)
+- Frontend: /users/:id → Albums sekmesi; liste, modal detay, fotoğraf ekleme/silme (sadece sahip), i18n ve sayfalama.
 
 - Backend: /api/posts/ CRUD, /api/posts/{id}/like (POST)/unlike (DELETE), /api/posts/{id}/comments/ (GET/POST)
 - Frontend: /users/:id → Posts sekmesi; liste, modal detay, yorumlar ve beğeni; sayfalama ve i18n.
