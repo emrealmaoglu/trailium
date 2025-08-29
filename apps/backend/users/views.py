@@ -21,6 +21,7 @@ from rest_framework import serializers
 
 from .serializers import (PasswordChangeSerializer, ProfileUpdateSerializer,
                           RegisterSerializer, UserSerializer)
+from .policies import can_view_profile
 
 User = get_user_model()
 
@@ -75,6 +76,16 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        # Admin görür
+        if user and (user.is_staff or user.is_superuser):
+            return qs
+        # Sadece görebildiği profiller
+        visible_ids = [u.id for u in qs if can_view_profile(user, u)]
+        return qs.filter(id__in=visible_ids)
 
     @decorators.action(detail=False, methods=["get", "patch", "delete"], url_path="me")
     def me(self, request):

@@ -104,6 +104,17 @@ const messages = {
       due: 'Son tarih',
       kind: { daily: 'Günlük', work: 'İş', home: 'Ev', personal: 'Kişisel', other: 'Diğer' },
       pagination: { prev: 'Önceki', next: 'Sonraki' }
+    },
+    visibility: {
+      public: 'Herkese açık',
+      followers: 'Sadece takipçiler',
+      private: 'Gizli'
+    },
+    badges: { premium: 'Premium' },
+    access: {
+      blockedFollowers: 'Bu profili yalnızca takipçiler görüntüleyebilir.',
+      blockedPrivate: 'Bu profil gizli.',
+      followCta: 'Takip et'
     }
   },
   en: {
@@ -209,6 +220,17 @@ const messages = {
       due: 'Due',
       kind: { daily: 'Daily', work: 'Work', home: 'Home', personal: 'Personal', other: 'Other' },
       pagination: { prev: 'Previous', next: 'Next' }
+    },
+    visibility: {
+      public: 'Public',
+      followers: 'Followers-only',
+      private: 'Private'
+    },
+    badges: { premium: 'Premium' },
+    access: {
+      blockedFollowers: 'Only followers can view this profile.',
+      blockedPrivate: 'This profile is private.',
+      followCta: 'Follow'
     }
   }
 }

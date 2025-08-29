@@ -192,6 +192,9 @@ Hızlı deneme
 ## Posts Module (Sprint 4)
 - ## Albums Module (Sprint 5)
 - ## Demo Seed (Sprint 8)
+## Visibility & RBAC (Sprint 9)
+
+Görünürlük kuralları (public / followers / private) tüm kullanıcı ve içerik listeleme/getir uçlarına uygulanır. Yetkisiz erişim 404 döner (sızıntıyı önlemek için). Sahibin ve adminin erişimi etkilenmez. Frontend, görünürlük rozeti ve Premium rozeti gösterir; takipçi olmayanlar için takip CTA’sı ile nazik engelleme mesajları görünür.
 
 Yerel demo içeriği oluşturma/sıfırlama:
 

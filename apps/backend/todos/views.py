@@ -9,6 +9,7 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse
 from .models import TodoList, TodoItem, TodoSubItem, TodoPriority
 from .serializers import TodoListSerializer, TodoItemSerializer, TodoSubItemSerializer, TodoPrioritySerializer
 from .permissions import IsOwnerOrAdmin
+from users.policies import filter_queryset_by_visibility
 
 
 class TodoPriorityViewSet(viewsets.ReadOnlyModelViewSet):
@@ -24,8 +25,8 @@ class TodoListViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_queryset(self):
-        user = self.request.user
-        return TodoList.objects.filter(user=user)
+        qs = TodoList.objects.all()
+        return filter_queryset_by_visibility(qs, self.request.user, owner_field="user")
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -38,8 +39,9 @@ class TodoItemViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_queryset(self):
-        user = self.request.user
-        return TodoItem.objects.filter(list__user=user)
+        qs = TodoItem.objects.select_related("list")
+        # Sahiplik alanı list.user
+        return filter_queryset_by_visibility(qs, self.request.user, owner_field="list__user")
 
     @decorators.action(detail=True, methods=["post"], url_path="toggle-done")
     def toggle_done(self, request, pk=None):
@@ -56,7 +58,7 @@ class TodoSubItemViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_queryset(self):
-        user = self.request.user
-        return TodoSubItem.objects.filter(parent__list__user=user)
+        qs = TodoSubItem.objects.select_related("parent", "parent__list")
+        return filter_queryset_by_visibility(qs, self.request.user, owner_field="parent__list__user")
 
 

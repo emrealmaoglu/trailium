@@ -12,6 +12,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import serializers
 
 from .models import Album, Comment, Follow, Like, Photo, Post, AlbumLike, AlbumComment
+from users.policies import filter_queryset_by_visibility
 from .serializers import (
     AlbumCreateSerializer,
     AlbumSerializer,
@@ -86,7 +87,8 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         base = super().get_queryset()
-        return base.filter(_visible_posts_for(self.request.user))
+        # Görünürlük filtresi: public/followers/owner
+        return filter_queryset_by_visibility(base, self.request.user, owner_field="user")
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -191,14 +193,11 @@ class AlbumViewSet(viewsets.ModelViewSet):
     queryset = Album.objects.all()
 
     def get_queryset(self):
-        return (
-            Album.objects.filter(user=self.request.user)
-            .prefetch_related("photos")
-            .annotate(
-                likes_count=Count("likes", distinct=True),
-                comments_count=Count("comments", distinct=True),
-            )
+        qs = Album.objects.all().prefetch_related("photos").annotate(
+            likes_count=Count("likes", distinct=True),
+            comments_count=Count("comments", distinct=True),
         )
+        return filter_queryset_by_visibility(qs, self.request.user, owner_field="user")
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:

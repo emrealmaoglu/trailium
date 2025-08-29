@@ -24,6 +24,10 @@
       <div class="meta">
         <h2 class="name">{{ user.full_name || user.username }}</h2>
         <div class="username">@{{ user.username }}</div>
+        <div class="chips">
+          <span class="chip">{{ visibilityLabel }}</span>
+          <span v-if="user.is_premium" class="chip premium">{{ t('badges.premium') }}</span>
+        </div>
       </div>
     </div>
 
@@ -39,7 +43,7 @@
 
 <script setup lang="ts">
 /** Kullanıcı detay iskelet sayfası (başlık + sekme yer tutucular). */
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { json } from '@/lib/http'
 import { useI18n } from 'vue-i18n'
@@ -51,6 +55,13 @@ const { t } = useI18n()
 const loading = ref(true)
 const error = ref<string|null>(null)
 const user = ref<any>(null)
+
+const visibilityLabel = computed(() => {
+  const vis = user.value?.profile_privacy || (user.value?.is_private ? 'private' : 'public')
+  if (vis === 'public') return t('visibility.public')
+  if (vis === 'friends' || vis === 'followers') return t('visibility.followers')
+  return t('visibility.private')
+})
 
 onMounted(async () => {
   loading.value = true
