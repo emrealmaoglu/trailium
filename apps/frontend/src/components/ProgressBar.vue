@@ -14,5 +14,3 @@ defineProps<{ value: number }>()
 .fill { height: 100%; background: var(--c-accent); }
 .label { position: absolute; top: -20px; right: 0; font-size: 12px; color: var(--c-text-muted); }
 </style>
-
-

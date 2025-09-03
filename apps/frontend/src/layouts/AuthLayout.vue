@@ -5,5 +5,3 @@
     </main>
   </div>
 </template>
-
-

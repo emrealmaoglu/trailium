@@ -59,5 +59,3 @@ async function onSave() {
 .ok { color: #16a34a; font-size: 13px; }
 .err { color: #dc2626; font-size: 13px; }
 </style>
-
-

@@ -1,15 +1,10 @@
 <script setup>
-/**
- * Giriş sayfası: i18n ile iki dilli metinler.
- */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
-import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const session = useSessionStore()
-const { t } = useI18n()
 const username = ref('')
 const password = ref('')
 const rememberMe = ref(true)
@@ -22,9 +17,9 @@ async function submit(e) {
   loading.value = true
 
   try {
-    await session.login({ username: username.value, password: password.value, rememberMe: rememberMe.value })
+    await session.login({ username: username.value.trim(), password: password.value, rememberMe: rememberMe.value })
     await session.fetchMe()
-    router.push('/users')
+    router.push('/feed')
   } catch (err) {
     console.error('Login error:', err)
     error.value = 'Login failed. Please check your credentials.'
@@ -35,33 +30,32 @@ async function submit(e) {
 </script>
 
 <template>
-  <div class="auth-page">
-    <div class="login-form-container card">
-      <h2 class="login-title">{{ t('auth.login') }}</h2>
-      <p class="login-description">{{ t('auth.welcomeBack') }}</p>
+  <div class="login-form-container">
+    <h2 class="login-title">Sign In</h2>
+    <p class="login-description">Welcome back! Please sign in to your account.</p>
 
-      <form class="login-form" @submit="submit">
+    <form class="login-form" @submit="submit">
       <div class="form-group">
-        <label for="username" class="form-label">{{ t('auth.username') }}</label>
+        <label for="username" class="form-label">Username</label>
         <input
           id="username"
           v-model="username"
           type="text"
           class="form-input"
-          placeholder="{{ t('auth.username') }}"
+          placeholder="Enter your username"
           required
           :disabled="loading"
         />
       </div>
 
       <div class="form-group">
-        <label for="password" class="form-label">{{ t('auth.password') }}</label>
+        <label for="password" class="form-label">Password</label>
         <input
           id="password"
           v-model="password"
           type="password"
           class="form-input"
-          placeholder="{{ t('auth.password') }}"
+          placeholder="Enter your password"
           required
           :disabled="loading"
         />
@@ -75,62 +69,47 @@ async function submit(e) {
             class="checkbox-input"
             :disabled="loading"
           />
-          <span class="checkbox-text">{{ t('auth.rememberMe') }}</span>
+          <span class="checkbox-text">Remember me</span>
         </label>
       </div>
 
-        <button
-          type="submit"
-          class="login-button"
-          :disabled="loading"
-        >
-          <span v-if="loading" class="loading-spinner"></span>
-          <span v-else>{{ t('auth.signInCta') }}</span>
-        </button>
+      <button
+        type="submit"
+        class="login-button"
+        :disabled="loading"
+      >
+        <span v-if="loading" class="loading-spinner"></span>
+        <span v-else>Sign In</span>
+      </button>
 
-        <div v-if="error" class="error-message">
-          {{ error }}
-        </div>
-      </form>
-
-      <div class="login-footer">
-        <p class="footer-text">
-          {{ t('auth.haveNoAccount') }}
-          <router-link to="/register" class="footer-link">{{ t('auth.register') }}</router-link>
-        </p>
+      <div v-if="error" class="error-message">
+        {{ error }}
       </div>
+    </form>
+
+    <div class="login-footer">
+      <p class="footer-text">
+        Don't have an account?
+        <router-link to="/auth/register" class="footer-link">Sign up</router-link>
+      </p>
     </div>
   </div>
 </template>
 
 <style scoped>
-.auth-page {
-  min-height: calc(100vh - 64px);
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: var(--c-bg);
-}
-
 .login-form-container {
   width: 100%;
-  max-width: 420px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: 16px;
-  padding: 28px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
 }
 
 .login-title {
   font-size: 24px;
   font-weight: 700;
-  color: var(--c-text);
+  color: #1a1a1a;
   margin: 0 0 8px 0;
 }
 
 .login-description {
-  color: var(--c-text-muted);
+  color: #6b7280;
   font-size: 14px;
   margin: 0 0 24px 0;
 }
@@ -150,25 +129,24 @@ async function submit(e) {
 .form-label {
   font-size: 14px;
   font-weight: 500;
-  color: var(--c-text);
+  color: #374151;
   text-align: left;
 }
 
 .form-input {
   padding: 12px 16px;
-  border: 2px solid var(--c-border);
+  border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 14px;
   transition: all 0.2s ease;
-  background: var(--c-surface-2);
-  color: var(--c-text);
+  background: #f9fafb;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--c-accent);
-  background: var(--c-surface);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .form-input:disabled {
@@ -192,18 +170,18 @@ async function submit(e) {
 .checkbox-input {
   width: 16px;
   height: 16px;
-  accent-color: var(--c-accent);
+  accent-color: #667eea;
 }
 
 .checkbox-text {
   font-size: 14px;
-  color: var(--c-text-muted);
+  color: #6b7280;
 }
 
 .login-button {
-  background: var(--c-accent);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  border: 2px solid var(--c-accent);
+  border: none;
   padding: 14px 24px;
   border-radius: 12px;
   font-size: 16px;
@@ -217,10 +195,8 @@ async function submit(e) {
 }
 
 .login-button:hover:not(:disabled) {
-  background: var(--c-accent-hover);
-  border-color: var(--c-accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 
 .login-button:disabled {
@@ -233,7 +209,7 @@ async function submit(e) {
   width: 16px;
   height: 16px;
   border: 2px solid transparent;
-  border-top: 2px solid #ffffff;
+  border-top: 2px solid white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -252,24 +228,23 @@ async function submit(e) {
   text-align: center;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid var(--c-border);
+  border-top: 1px solid #e5e7eb;
 }
 
 .footer-text {
-  color: var(--c-text-muted);
+  color: #6b7280;
   font-size: 14px;
   margin: 0;
 }
 
 .footer-link {
-  color: var(--c-accent);
+  color: #667eea;
   text-decoration: none;
   font-weight: 500;
 }
 
 .footer-link:hover {
   text-decoration: underline;
-  color: var(--c-accent-hover);
 }
 
 @keyframes spin {
@@ -278,8 +253,40 @@ async function submit(e) {
   }
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-  .login-form-container { padding: 20px; border-radius: 14px; }
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .login-title {
+    color: white;
+  }
+
+  .form-label {
+    color: #d1d5db;
+  }
+
+  .form-input {
+    background: #374151;
+    border-color: #4b5563;
+    color: white;
+  }
+
+  .form-input:focus {
+    background: #4b5563;
+  }
+
+  .checkbox-text {
+    color: #d1d5db;
+  }
+
+  .login-description {
+    color: #9ca3af;
+  }
+
+  .footer-text {
+    color: #9ca3af;
+  }
+
+  .login-footer {
+    border-top-color: #4b5563;
+  }
 }
 </style>

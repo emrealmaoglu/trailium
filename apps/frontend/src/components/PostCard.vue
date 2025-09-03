@@ -29,5 +29,3 @@ defineEmits(['open','like'])
 .btn, .like { border: 1px solid var(--c-border); background: var(--c-surface-2); border-radius: 8px; padding: 6px 10px; }
 .muted { font-size: 12px; color: var(--c-text-muted); }
 </style>
-
-

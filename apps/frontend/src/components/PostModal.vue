@@ -67,5 +67,3 @@ onMounted(fetch)
 .skl { height: 60px; border-radius: 8px; background: var(--c-surface-2); animation: pulse 1.2s ease-in-out infinite; }
 @keyframes pulse { 0%{opacity:.6} 50%{opacity:.95} 100%{opacity:.6} }
 </style>
-
-

@@ -16,5 +16,3 @@ defineEmits(['open'])
 .title { margin: 0; font-size: 16px; font-weight: 700; }
 .muted { font-size: 12px; color: var(--c-text-muted); }
 </style>
-
-

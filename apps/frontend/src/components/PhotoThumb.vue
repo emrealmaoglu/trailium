@@ -15,5 +15,3 @@ defineProps<{ src: string; title?: string }>()
 img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cap { font-size: 11px; color: var(--c-text-muted); padding: 4px 6px; }
 </style>
-
-

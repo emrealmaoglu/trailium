@@ -41,5 +41,3 @@ function add() {
 .row.active { outline: 2px solid var(--c-accent); outline-offset: 2px; }
 .name { font-weight: 600; margin-bottom: 6px; }
 </style>
-
-

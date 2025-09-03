@@ -22,7 +22,9 @@ class TodoList(models.Model):
         ("work", "Work"),
         ("other", "Other"),
     )
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="todo_lists")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="todo_lists"
+    )
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     kind = models.CharField(max_length=24, choices=KIND_CHOICES, default="personal")
@@ -43,7 +45,13 @@ class TodoItem(models.Model):
     description = models.TextField(blank=True)
     is_done = models.BooleanField(default=False)
     due_date = models.DateField(blank=True, null=True)
-    priority = models.ForeignKey(TodoPriority, on_delete=models.PROTECT, related_name="items", null=True, blank=True)
+    priority = models.ForeignKey(
+        TodoPriority,
+        on_delete=models.PROTECT,
+        related_name="items",
+        null=True,
+        blank=True,
+    )
     progress_cached = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -56,7 +64,9 @@ class TodoItem(models.Model):
 
 
 class TodoSubItem(models.Model):
-    parent = models.ForeignKey(TodoItem, on_delete=models.CASCADE, related_name="subitems")
+    parent = models.ForeignKey(
+        TodoItem, on_delete=models.CASCADE, related_name="subitems"
+    )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     is_done = models.BooleanField(default=False)
@@ -68,5 +78,3 @@ class TodoSubItem(models.Model):
 
     def __str__(self) -> str:
         return self.title
-
-

@@ -13,6 +13,7 @@ function toggleMenu() {
 function navigateTo(route, action) {
   router.push(route)
   showMenu.value = false
+  showNotification(action, 'success', 3000)
 }
 
 function closeMenu() {

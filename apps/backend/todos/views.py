@@ -4,12 +4,14 @@ Todos API görünümleri.
 Sahiplik bazlı yetkilendirme ve sayfalama desteği içerir.
 """
 
-from rest_framework import viewsets, permissions, decorators, response, status
-from drf_spectacular.utils import extend_schema, OpenApiResponse
-from .models import TodoList, TodoItem, TodoSubItem, TodoPriority
-from .serializers import TodoListSerializer, TodoItemSerializer, TodoSubItemSerializer, TodoPrioritySerializer
-from .permissions import IsOwnerOrAdmin
+from drf_spectacular.utils import extend_schema
+from rest_framework import decorators, permissions, response, status, viewsets
 from users.policies import filter_queryset_by_visibility
+
+from .models import TodoItem, TodoList, TodoPriority, TodoSubItem
+from .permissions import IsOwnerOrAdmin
+from .serializers import (TodoItemSerializer, TodoListSerializer,
+                          TodoPrioritySerializer, TodoSubItemSerializer)
 
 
 class TodoPriorityViewSet(viewsets.ReadOnlyModelViewSet):
@@ -18,7 +20,11 @@ class TodoPriorityViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-@extend_schema(tags=["Todos"], summary="Todo listeleri", description="Kullanıcıya ait todo listeleri.")
+@extend_schema(
+    tags=["Todos"],
+    summary="Todo listeleri",
+    description="Kullanıcıya ait todo listeleri.",
+)
 class TodoListViewSet(viewsets.ModelViewSet):
     queryset = TodoList.objects.all()
     serializer_class = TodoListSerializer
@@ -32,7 +38,9 @@ class TodoListViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-@extend_schema(tags=["Todos"], summary="Todo öğeleri", description="Kullanıcıya ait todo öğeleri.")
+@extend_schema(
+    tags=["Todos"], summary="Todo öğeleri", description="Kullanıcıya ait todo öğeleri."
+)
 class TodoItemViewSet(viewsets.ModelViewSet):
     queryset = TodoItem.objects.all()
     serializer_class = TodoItemSerializer
@@ -41,17 +49,23 @@ class TodoItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = TodoItem.objects.select_related("list")
         # Sahiplik alanı list.user
-        return filter_queryset_by_visibility(qs, self.request.user, owner_field="list__user")
+        return filter_queryset_by_visibility(
+            qs, self.request.user, owner_field="list__user"
+        )
 
     @decorators.action(detail=True, methods=["post"], url_path="toggle-done")
     def toggle_done(self, request, pk=None):
         item = self.get_object()
         item.is_done = not item.is_done
         item.save(update_fields=["is_done", "updated_at"])
-        return response.Response(self.get_serializer(item).data, status=status.HTTP_200_OK)
+        return response.Response(
+            self.get_serializer(item).data, status=status.HTTP_200_OK
+        )
 
 
-@extend_schema(tags=["Todos"], summary="Alt öğeler", description="Kullanıcıya ait alt öğeler.")
+@extend_schema(
+    tags=["Todos"], summary="Alt öğeler", description="Kullanıcıya ait alt öğeler."
+)
 class TodoSubItemViewSet(viewsets.ModelViewSet):
     queryset = TodoSubItem.objects.all()
     serializer_class = TodoSubItemSerializer
@@ -59,6 +73,6 @@ class TodoSubItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = TodoSubItem.objects.select_related("parent", "parent__list")
-        return filter_queryset_by_visibility(qs, self.request.user, owner_field="parent__list__user")
-
-
+        return filter_queryset_by_visibility(
+            qs, self.request.user, owner_field="parent__list__user"
+        )

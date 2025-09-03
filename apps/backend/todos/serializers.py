@@ -5,7 +5,8 @@ Türkçe NumPy tarzı docstringler içerir.
 """
 
 from rest_framework import serializers
-from .models import TodoList, TodoItem, TodoSubItem, TodoPriority
+
+from .models import TodoItem, TodoList, TodoPriority, TodoSubItem
 
 
 class TodoPrioritySerializer(serializers.ModelSerializer):
@@ -58,7 +59,10 @@ class TodoItemSerializer(serializers.ModelSerializer):
     subitems = TodoSubItemSerializer(many=True, read_only=True)
     priority = TodoPrioritySerializer(read_only=True)
     priority_id = serializers.PrimaryKeyRelatedField(
-        queryset=TodoPriority.objects.all(), source="priority", write_only=True, required=False
+        queryset=TodoPriority.objects.all(),
+        source="priority",
+        write_only=True,
+        required=False,
     )
 
     class Meta:
@@ -123,5 +127,3 @@ class TodoListSerializer(serializers.ModelSerializer):
             return 0
         total = sum(i.progress_cached for i in obj.items.all())
         return int(round(total / count))
-
-

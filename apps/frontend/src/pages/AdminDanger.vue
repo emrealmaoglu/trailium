@@ -18,62 +18,6 @@
 
     <!-- Admin Tools -->
     <div v-else class="admin-tools">
-      <!-- Cookie Test Tool -->
-      <div class="admin-tool-section">
-        <h2>🍪 Cookie Test Tool</h2>
-        <p class="tool-description">
-          Test and manage cookies for development and debugging purposes.
-        </p>
-
-        <div class="cookie-test-controls">
-          <div class="cookie-input-group">
-            <label for="cookie-name">Cookie Name:</label>
-            <input
-              id="cookie-name"
-              v-model="cookieName"
-              type="text"
-              placeholder="cookie_name"
-              class="cookie-input"
-            />
-          </div>
-
-          <div class="cookie-input-group">
-            <label for="cookie-value">Cookie Value:</label>
-            <input
-              id="cookie-value"
-              v-model="cookieValue"
-              type="text"
-              placeholder="cookie_value"
-              class="cookie-input"
-            />
-          </div>
-
-          <div class="cookie-input-group">
-            <label for="cookie-days">Expiry (days):</label>
-            <input
-              id="cookie-days"
-              v-model="cookieDays"
-              type="number"
-              min="1"
-              max="365"
-              class="cookie-input"
-            />
-          </div>
-
-          <div class="cookie-actions">
-            <button @click="setCookie" class="btn-set-cookie">Set Cookie</button>
-            <button @click="getCookie" class="btn-get-cookie">Get Cookie</button>
-            <button @click="deleteCookie" class="btn-delete-cookie">Delete Cookie</button>
-            <button @click="listAllCookies" class="btn-list-cookies">List All Cookies</button>
-          </div>
-        </div>
-
-        <div v-if="cookieResult" class="cookie-result">
-          <h4>Result:</h4>
-          <pre>{{ cookieResult }}</pre>
-        </div>
-      </div>
-
       <!-- Purge Non-Admin Users -->
       <div class="danger-zone">
         <h2>🗑️ Purge Non-Admin Users</h2>
@@ -210,7 +154,7 @@
     <!-- Loading Overlay -->
     <div v-if="isLoading" class="loading-overlay">
       <div class="loading-content">
-        <LoadingSpinner size="large" />
+        <Spinner size="large" />
         <p>Processing...</p>
       </div>
     </div>
@@ -223,7 +167,7 @@ import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import { json } from '@/lib/http'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import Spinner from '@/components/Spinner.vue'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
@@ -236,12 +180,6 @@ const confirmationText = ref('')
 const dryRunResults = ref(null)
 const keepList = ref([])
 const newKeepUser = ref('')
-
-// Cookie test variables
-const cookieName = ref('')
-const cookieValue = ref('')
-const cookieDays = ref(7)
-const cookieResult = ref('')
 
 // Computed
 const isAdmin = computed(() => sessionStore.user?.is_superuser)
@@ -329,73 +267,6 @@ async function executePurge() {
   }
 }
 
-// Cookie test functions
-function setCookie() {
-  if (!cookieName.value.trim()) {
-    showNotification('Please enter a cookie name', 'warning')
-    return
-  }
-
-  const expires = new Date()
-  expires.setDate(expires.getDate() + (cookieDays.value || 7))
-
-  document.cookie = `${cookieName.value}=${cookieValue.value}; expires=${expires.toUTCString()}; path=/`
-
-  cookieResult.value = `Cookie "${cookieName.value}" set successfully!\nExpires: ${expires.toLocaleString()}`
-  showNotification('Cookie set successfully', 'success')
-}
-
-function getCookie() {
-  if (!cookieName.value.trim()) {
-    showNotification('Please enter a cookie name', 'warning')
-    return
-  }
-
-  const nameEQ = cookieName.value + "="
-  const ca = document.cookie.split(';')
-
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i]
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length)
-    if (c.indexOf(nameEQ) === 0) {
-      const value = c.substring(nameEQ.length, c.length)
-      cookieResult.value = `Cookie "${cookieName.value}" found!\nValue: ${value}`
-      return
-    }
-  }
-
-  cookieResult.value = `Cookie "${cookieName.value}" not found`
-  showNotification('Cookie not found', 'warning')
-}
-
-function deleteCookie() {
-  if (!cookieName.value.trim()) {
-    showNotification('Please enter a cookie name', 'warning')
-    return
-  }
-
-  document.cookie = `${cookieName.value}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`
-
-  cookieResult.value = `Cookie "${cookieName.value}" deleted successfully!`
-  showNotification('Cookie deleted successfully', 'success')
-}
-
-function listAllCookies() {
-  const cookies = document.cookie.split(';')
-  if (cookies.length === 0 || (cookies.length === 1 && cookies[0].trim() === '')) {
-    cookieResult.value = 'No cookies found'
-    return
-  }
-
-  const cookieList = cookies.map(cookie => {
-    const [name, value] = cookie.trim().split('=')
-    return `${name}: ${value || '(no value)'}`
-  }).join('\n')
-
-  cookieResult.value = `All Cookies:\n${cookieList}`
-  showNotification('Cookies listed successfully', 'success')
-}
-
 // Notifications
 function showNotification(message, type = 'info') {
   // Use the global notification system if available
@@ -456,123 +327,6 @@ onMounted(() => {
 
 .admin-tools {
   margin-top: 30px;
-}
-
-/* Cookie Test Tool */
-.admin-tool-section {
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 30px;
-}
-
-.tool-description {
-  color: var(--c-text-muted);
-  margin-bottom: 20px;
-}
-
-.cookie-test-controls {
-  display: grid;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.cookie-input-group {
-  display: grid;
-  gap: 8px;
-}
-
-.cookie-input-group label {
-  font-weight: 500;
-  color: var(--c-text);
-}
-
-.cookie-input {
-  padding: 10px 12px;
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
-  background: var(--c-surface);
-  color: var(--c-text);
-  font-size: 14px;
-}
-
-.cookie-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.btn-set-cookie, .btn-get-cookie, .btn-delete-cookie, .btn-list-cookies {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-set-cookie {
-  background: #10b981;
-  color: white;
-}
-
-.btn-set-cookie:hover {
-  background: #059669;
-}
-
-.btn-get-cookie {
-  background: #3b82f6;
-  color: white;
-}
-
-.btn-get-cookie:hover {
-  background: #2563eb;
-}
-
-.btn-delete-cookie {
-  background: #ef4444;
-  color: white;
-}
-
-.btn-delete-cookie:hover {
-  background: #dc2626;
-}
-
-.btn-list-cookies {
-  background: #8b5cf6;
-  color: white;
-}
-
-.btn-list-cookies:hover {
-  background: #7c3aed;
-}
-
-.cookie-result {
-  background: var(--c-surface-2);
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
-  padding: 16px;
-  margin-top: 20px;
-}
-
-.cookie-result h4 {
-  margin: 0 0 12px 0;
-  color: var(--c-text);
-}
-
-.cookie-result pre {
-  background: var(--c-bg);
-  padding: 12px;
-  border-radius: 6px;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: var(--c-text);
-  font-family: monospace;
-  font-size: 13px;
-  margin: 0;
 }
 
 .danger-zone {

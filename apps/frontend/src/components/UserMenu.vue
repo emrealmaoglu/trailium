@@ -53,52 +53,44 @@
       <div class="dropdown-divider"></div>
 
       <div class="dropdown-section">
-        <div class="section-title">{{ $t('menu.theme') }}</div>
+        <div class="section-title">Theme</div>
         <div class="theme-buttons">
           <button
             :class="['theme-btn', { active: currentTheme === 'light' }]"
             @click="setTheme('light')"
           >
-            ☀️ {{ $t('menu.light') }}
+            ☀️ Light
           </button>
           <button
             :class="['theme-btn', { active: currentTheme === 'dark' }]"
             @click="setTheme('dark')"
           >
-            🌙 {{ $t('menu.dark') }}
+            🌙 Dark
           </button>
           <button
             :class="['theme-btn', { active: currentTheme === 'system' }]"
             @click="setTheme('system')"
           >
-            💻 {{ $t('menu.system') }}
+            💻 System
           </button>
         </div>
       </div>
 
       <div class="dropdown-divider"></div>
 
-      <div class="dropdown-section">
-        <div class="section-title">{{ $t('menu.language') }}</div>
-        <div class="theme-buttons">
-          <button class="theme-btn" @click="changeLang('tr')">🇹🇷 {{ $t('menu.turkish') }}</button>
-          <button class="theme-btn" @click="changeLang('en')">🇺🇸 {{ $t('menu.english') }}</button>
-        </div>
-      </div>
-
       <div class="dropdown-menu">
         <button class="menu-item" @click="goProfile">
-          👤 {{ $t('menu.profile') }}
+          👤 Profile
         </button>
         <button class="menu-item" @click="goSettings">
-          ⚙️ {{ $t('menu.settings') }}
+          ⚙️ Settings
         </button>
       </div>
 
       <div class="dropdown-divider"></div>
 
       <button class="logout-button" @click="onLogout">
-        🚪 {{ $t('menu.logout') }}
+        🚪 Logout
       </button>
     </div>
   </div>
@@ -109,7 +101,6 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import { applyTheme, getStoredTheme } from '@/lib/theme'
-import { setLocale } from '@/i18n'
 
 const router = useRouter()
 const session = useSessionStore()
@@ -119,11 +110,6 @@ const currentTheme = ref(getStoredTheme())
 const setTheme = (t) => {
   applyTheme(t);
   currentTheme.value = t;
-  open.value = false
-}
-
-const changeLang = (lang) => {
-  setLocale(lang)
   open.value = false
 }
 
@@ -154,18 +140,18 @@ const onLogout = async () => {
   align-items: center;
   gap: 12px;
   padding: 8px 16px;
-  background: var(--c-surface-2);
-  border: 1px solid var(--c-border);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
-  color: var(--c-text);
+  color: white;
   cursor: pointer;
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
 }
 
 .user-menu-button:hover {
-  background: var(--c-surface);
-  border-color: var(--c-border);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-1px);
 }
 
@@ -174,7 +160,7 @@ const onLogout = async () => {
   height: 36px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid var(--c-border);
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .avatar-image {
@@ -209,12 +195,11 @@ const onLogout = async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 120px;
-  color: var(--c-text);
 }
 
 .user-email {
   font-size: 12px;
-  color: var(--c-text-muted);
+  opacity: 0.8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -237,14 +222,13 @@ const onLogout = async () => {
   right: 0;
   top: calc(100% + 8px);
   width: 280px;
-  background: var(--c-surface);
+  background: white;
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--c-border);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   overflow: hidden;
   z-index: 1000;
   animation: slideDown 0.2s ease;
-  color: var(--c-text);
 }
 
 .dropdown-header {
@@ -293,7 +277,7 @@ const onLogout = async () => {
 
 .dropdown-divider {
   height: 1px;
-  background: var(--c-border);
+  background: rgba(0, 0, 0, 0.1);
   margin: 0;
 }
 
@@ -304,7 +288,7 @@ const onLogout = async () => {
 .section-title {
   font-size: 12px;
   font-weight: 600;
-  color: var(--c-text-muted);
+  color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 12px;
@@ -318,18 +302,18 @@ const onLogout = async () => {
 
 .theme-btn {
   padding: 8px 12px;
-  border: 1px solid var(--c-border);
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  background: var(--c-surface-2);
-  color: var(--c-text);
+  background: #f9fafb;
+  color: #374151;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .theme-btn:hover {
-  background: var(--c-surface);
-  border-color: var(--c-border);
+  background: #f3f4f6;
+  border-color: #d1d5db;
 }
 
 .theme-btn.active {
@@ -348,14 +332,14 @@ const onLogout = async () => {
   text-align: left;
   background: none;
   border: none;
-  color: var(--c-text);
+  color: #374151;
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .menu-item:hover {
-  background: var(--c-surface-2);
+  background: #f9fafb;
 }
 
 .logout-button {
@@ -386,19 +370,45 @@ const onLogout = async () => {
   }
 }
 
-/* App dark mode overrides (root has .dark class) */
-:global(.dark) .user-menu-button {
-  background: var(--c-surface-2);
-  border: 1px solid var(--c-border);
-  color: var(--c-text);
-}
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .user-dropdown {
+    background: #1f2937;
+    border-color: #4b5563;
+  }
 
-:global(.dark) .user-menu-button:hover {
-  background: var(--c-surface);
-  border-color: var(--c-border);
-}
+  .dropdown-header {
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  }
 
-:global(.dark) .user-avatar {
-  border: 2px solid var(--c-border);
+  .dropdown-divider {
+    background: #4b5563;
+  }
+
+  .section-title {
+    color: #9ca3af;
+  }
+
+  .theme-btn {
+    background: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+  }
+
+  .theme-btn:hover {
+    background: #4b5563;
+  }
+
+  .menu-item {
+    color: #d1d5db;
+  }
+
+  .menu-item:hover {
+    background: #374151;
+  }
+
+  .logout-button:hover {
+    background: #374151;
+  }
 }
 </style>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import TodoItem, TodoList, TodoSubItem, TodoPriority
+from .models import TodoItem, TodoList, TodoSubItem
 
 
 @admin.register(TodoList)
@@ -22,9 +22,3 @@ class TodoSubItemAdmin(admin.ModelAdmin):
     list_display = ("id", "parent", "title", "is_done")
     search_fields = ("title", "parent__title")
     list_filter = ("is_done",)
-
-
-@admin.register(TodoPriority)
-class TodoPriorityAdmin(admin.ModelAdmin):
-    list_display = ("key", "name", "sort_order", "is_default")
-    search_fields = ("key", "name")

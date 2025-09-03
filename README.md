@@ -1,357 +1,92 @@
-# 🚀 Trailium - Social Platform (Development Version)
+# Trailium — Local-Only Demo
 
-**A social media platform built with Vue.js and Django - Currently in active development, NOT production-ready.**
+## Local-only Policy
 
-[![Vue.js](https://img.shields.io/badge/Vue.js-3.5.18-4FC08D?style=for-the-badge&logo=vue.js)](https://vuejs.org/)
-[![Django](https://img.shields.io/badge/Django-5.2.5-092E20?style=for-the-badge&logo=django)](https://www.djangoproject.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-3.8-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+This repository is **local/demo-only**. Deployment and infrastructure artifacts are blocked by default.
 
-## ⚠️ **IMPORTANT DISCLAIMER**
+### Pre-commit Guard
+- **Automatic blocking**: Git pre-commit hook prevents adding deployment/infra files
+- **Installation**: `.git/hooks/pre-commit` is created automatically (requires `chmod +x`)
+- **Bypass** (discouraged): `git commit --no-verify` for hook maintenance only
+- **Blocked patterns**: Dockerfile, docker-compose, k8s/, terraform/, .github/workflows/, etc.
 
-**This project is currently in active development and is NOT production-ready.** The following features are still being implemented:
+### Scope
+- ✅ Local development, demo scenarios, UI/UX improvements
+- ❌ Production deployment, CI/CD, infrastructure as code
 
-- [ ] Complete security hardening
-- [ ] Comprehensive testing suite
-- [ ] Production deployment configuration
-- [ ] Performance optimization
-- [ ] Monitoring and alerting
-- [ ] Backup and disaster recovery
+## Quickstart (3 minutes)
+1. Clone: `git clone https://github.com/emrealmaoglu/trailium.git && cd trailium`
+2. Env: `cp .env.example .env.development`
+3. Seed (first run): `bash scripts/dev-seed.sh`
+4. Run: `bash scripts/dev.sh`
+   - Backend: http://localhost:8000
+   - Frontend: http://localhost:5173
 
-**Do not deploy this to production without completing the security and testing requirements.**
+## Demo Scenario
+- Login (dev user): emreaslan663 / demo123
+- Users: follow 2–3 kişi
+- Feed: beğen, yorum yap
+- Posts: post ekle/düzenle, fotoğraflara tıkla (büyüt)
 
-## ✨ **Current Features**
+## Demo Data / Seeding
+- Default demo users: 25 users with realistic Turkish data
+- Premium rate: 15% (configurable via `DEMO_PREMIUM_RATE`)
+- Private rate: 10% (configurable via `DEMO_PRIVATE_RATE`)
+- To bias demo users (more premium/private), set `DEMO_PREMIUM_RATE` / `DEMO_PRIVATE_RATE` before running `dev-seed`
+- Example: `DEMO_PREMIUM_RATE=0.30 DEMO_PRIVATE_RATE=0.20 bash scripts/dev-seed.sh`
 
-### 🔒 **Basic Security** (In Progress)
-- JWT authentication with httpOnly cookies
-- Basic CORS configuration
-- Input validation
-- Rate limiting (basic implementation)
+## Environment
+- Frontend base URL: `VITE_API_BASE` (default `http://localhost:8000`)
+- Django debug true, SQLite varsayılan
 
-### 📱 **UI/UX** (Basic Implementation)
-- Responsive design (needs improvement)
-- Basic component structure
-- Form validation
-- Notification system
+### API Base URL & Token Refresh
+- Frontend tüm isteklerde `VITE_API_BASE` değerini kullanır (bkz. `apps/frontend/src/lib/http.ts`).
+- 401 Unauthorized alınırsa otomatik olarak refresh token ile erişim yenilenir ve istek tekrar denenir.
+- Geliştirirken farklı backend portu/hostu kullanacaksan `.env.development` içindeki `VITE_API_BASE` değerini güncellemen yeterli.
 
-### 🏗️ **Architecture** (Foundation Only)
-- Django REST API backend
-- Vue.js 3 frontend
-- PostgreSQL database
-- Docker containerization
+### Feature Flags
+- `VITE_ENABLE_ADMIN_DEMO` (default: `false`)
+  - Admin-only rotaları (örn. `/admin-danger`) yerel demoda varsayılan olarak KAPALI.
+  - Açmak için: `echo "VITE_ENABLE_ADMIN_DEMO=true" >> apps/frontend/.env.development` ve dev server’ı yeniden başlat.
 
-## 🚀 **Development Setup**
-
-### Prerequisites
-- Node.js 18+ and npm
-- Python 3.11+
-- PostgreSQL 16+
-- Docker & Docker Compose
-
-### Quick Start
-
-1. **Clone the repository**
+## Smoke Tests
 ```bash
-git clone https://github.com/yourusername/trailium.git
-cd trailium
+# Login
+curl -s -X POST http://localhost:8000/api/auth/login/ \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"emreaslan663","password":"demo123"}' | tee /tmp/login.json
+ACCESS=$(jq -r .access /tmp/login.json)
+
+# Me
+curl -i -H "Authorization: Bearer $ACCESS" http://localhost:8000/api/users/me/
+
+# Feed/Posts/Albums
+curl -i -H "Authorization: Bearer $ACCESS" "http://localhost:8000/api/feed/posts?page_size=5"
+curl -i -H "Authorization: Bearer $ACCESS" "http://localhost:8000/api/posts/?page_size=5"
+curl -i -H "Authorization: Bearer $ACCESS" "http://localhost:8000/api/albums/"
 ```
 
-2. **Backend Setup**
-```bash
-cd apps/backend
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-```
-
-3. **Frontend Setup**
-```bash
-cd apps/frontend
-npm install
-npm run dev
-```
-
-4. **Docker Setup (Recommended)**
-```bash
-cd infra/compose
-docker-compose up -d
-```
-
-## 🔧 **Configuration**
-
-### Environment Variables
-
-Create a `.env` file in the `infra/compose` directory:
-
-```bash
-# Django Settings
-DEBUG=True
-SECRET_KEY=your-development-secret-key-here
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-# Database Settings
-POSTGRES_DB=trailium_dev
-POSTGRES_USER=trailium
-POSTGRES_PASSWORD=trailium
-
-# CORS Settings
-CORS_ALLOW_ALL_ORIGINS=True  # Only for development!
-```
-
-### Removed/Quarantined Deployment Items
-- Dockerfiles and compose moved under `infra/`
-- Production-only settings removed or quarantined
-- Monitoring/observability configs quarantined
-- Build artifacts, logs, heavy media removed
-(This list will be finalized after the audit clean-up PR is merged.)
-
-## 🧪 **Testing**
-
-### Backend Testing
-```bash
-cd apps/backend
-pytest
-pytest --cov=. --cov-report=html
-```
-
-### Frontend Testing
-```bash
-cd apps/frontend
-npm test
-npm run test:coverage
-```
-
-**Note: Test coverage is currently incomplete and needs significant improvement.**
-
-## 🧰 Local Run (PostgreSQL)
-
-Backend
-
-```bash
-cd apps/backend
-python -m venv .venv && source .venv/bin/activate
-cp .env.example .env
-# ensure a local Postgres is running and matches .env
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver 0.0.0.0:8000
-```
-
-Frontend
-
-```bash
-cd apps/frontend
-cp .env.example .env  # contains VITE_API_BASE_URL=http://127.0.0.1:8000
-npm install
-npm run dev
-```
-
-3-minute demo
-
-1) Open FE → /register → create user
-2) /login → sign in (remember me optional)
-3) Redirected to /users stub → open AvatarMenu → Logout
-
-## 🗂️ Documentation & i18n Updates
-
-- All backend modules, modeller, serializer ve view'ler Türkçe NumPy tarzı docstring ile açıklandı.
-- Frontend bileşenleri ve Pinia store'ları için JSDoc yorumları eklendi (asgari düzeyde).
-- UI, Türkçe/İngilizce çift dil desteğine sahiptir. Varsayılan dil Türkçe'dir.
-- Dili değiştirmek için sağ üstteki kullanıcı menüsünden Dil bölümünden (🇹🇷/🇺🇸) seçim yapın.
-
-### i18n
-
-- vue-i18n kuruldu (Vue 3 uyumlu v9).
-- Arayüz Türkçe/İngilizce destekler; dil değişimi için Kullanıcı Menüsü → Dil.
-
-## Users Module (Sprint 2)
-
-- Routes: `/users` (list), `/users/:id` (detail header with tab placeholders)
-- Pagination: number-based via `/api/users/?page=&page_size=` (page size=10)
-- States: loading skeleton, empty messaging, error with retry
-- i18n: TR/EN labels for list, detail, pagination
-- Test: login → go to `/users` → click a card → `/users/:id` → switch language from User Menu
-
-## Todos Frontend (Sprint 3.2)
-
-- /users/:id → Todos sekmesi eklenmiştir.
-- Özellikler: listeler/öğeler/alt öğeler için CRUD, toggle-done, ilerleme çubuğu, sayfalama.
-- i18n: TR/EN etiketler; dil değişimi User Menu → Dil.
-
-Hızlı deneme
-
-1) /users → bir kullanıcıya tıklayın → Todos
-2) “Günlük” adında bir liste ekleyin
-3) Birkaç öğe ekleyin, bir öğeye alt öğeler ekleyin
-4) Alt öğeyi ve öğeyi toggle yapın → % ilerleme güncellenir
-5) URL’de ?page=2 deneyin → sayfa değişir
-
-## Posts Module (Sprint 4)
-- ## Albums Module (Sprint 5)
-- ## Demo Seed (Sprint 8)
-## Visibility & RBAC (Sprint 9)
-
-Görünürlük kuralları (public / followers / private) tüm kullanıcı ve içerik listeleme/getir uçlarına uygulanır. Yetkisiz erişim 404 döner (sızıntıyı önlemek için). Sahibin ve adminin erişimi etkilenmez. Frontend, görünürlük rozeti ve Premium rozeti gösterir; takipçi olmayanlar için takip CTA’sı ile nazik engelleme mesajları görünür.
-
-Yerel demo içeriği oluşturma/sıfırlama:
-
-```bash
-cd apps/backend
-source .venv/bin/activate  # opsiyonel
-python manage.py seed_demo
-# sıfırlamak için
-python manage.py reset_demo
-```
-
-Varsayılan girişler: `demo01@example.test` / `Demo1234!` (02..25 varyantları mevcuttur).
-
-Notlar:
-- Deterministik tohum; komut tekrar çalıştırılabilir.
-- Küçük hacimli verilerle UI hızlı kalır (kullanıcılar, gönderiler, yorumlar/like, yapılacaklar, albümler/fotoğraflar, takip).
-
-- Backend: /api/albums/ CRUD; /api/albums/{id}/photos/ (GET/POST)
-- Frontend: /users/:id → Albums sekmesi; liste, modal detay, fotoğraf ekleme/silme (sadece sahip), i18n ve sayfalama.
-
-- Backend: /api/posts/ CRUD, /api/posts/{id}/like (POST)/unlike (DELETE), /api/posts/{id}/comments/ (GET/POST)
-- Frontend: /users/:id → Posts sekmesi; liste, modal detay, yorumlar ve beğeni; sayfalama ve i18n.
-## Todos Backend (Sprint 3.1)
-
-- Endpoints (all under `/api/`):
-  - `GET/POST /api/todo-lists/`, `GET/PATCH/DELETE /api/todo-lists/{id}/`
-  - `GET/POST /api/todo-items/`, `GET/PATCH/DELETE /api/todo-items/{id}/`, `POST /api/todo-items/{id}/toggle-done/`
-  - `GET/POST /api/todo-subitems/`, `GET/PATCH/DELETE /api/todo-subitems/{id}/`
-- Sahiplik: admin tümünü görebilir; normal kullanıcı sadece kendi kayıtlarını görebilir.
-- İlerleme: Alt öğeler tamamlandıkça öğe `progress_cached` güncellenir; liste ilerlemesi serileştiricide ortalama ile hesaplanır.
-- Sayfalama: sayfa numarası ve `page_size` desteklenir.
-## 🚧 **Known Issues & Limitations**
-
-### Security Issues (CRITICAL)
-- [ ] Hardcoded secret keys in development
-- [ ] CORS configuration too permissive
-- [ ] Missing input sanitization
-- [ ] No audit logging
-- [ ] Weak password policies
-
-### Performance Issues
-- [ ] No caching strategy
-- [ ] N+1 database queries
-- [ ] No CDN configuration
-- [ ] Missing database indexes
-- [ ] No lazy loading
-
-### Architecture Issues
-- [ ] Monolithic structure
-- [ ] No microservices separation
-- [ ] Missing health checks
-- [ ] No monitoring
-- [ ] No backup strategy
-
-## 📋 **Development Roadmap**
-
-### Phase 1: Security Hardening (URGENT)
-- [ ] Implement proper environment variable management
-- [ ] Add comprehensive input validation
-- [ ] Implement audit logging
-- [ ] Add security headers
-- [ ] Complete CORS configuration
-
-### Phase 2: Testing & Quality
-- [ ] Achieve 80%+ test coverage
-- [ ] Add integration tests
-- [ ] Implement CI/CD pipeline
-- [ ] Add code quality checks
-
-### Phase 3: Production Readiness
-- [ ] Performance optimization
-- [ ] Monitoring and alerting
-- [ ] Backup and recovery
-- [ ] Documentation completion
-
-### Phase 4: Feature Enhancement
-- [ ] Real-time updates
-- [ ] Advanced content types
-- [ ] User engagement features
-- [ ] Mobile app
-
-## 🆘 **Getting Help**
-
-### Common Issues
-
-#### Backend Won't Start
-```bash
-# Check environment variables
-python manage.py check --deploy
-
-# Verify database connection
-python manage.py check --database default
-```
-
-#### Frontend Build Issues
-```bash
-# Clear dependencies
-rm -rf node_modules package-lock.json
-npm install
-
-# Check Node.js version
-node --version  # Should be 18+
-```
-
-#### Docker Issues
-```bash
-# Rebuild containers
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-## 🤝 **Contributing**
-
-### Development Workflow
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. **Add tests for new functionality**
-5. **Ensure all tests pass**
-6. Submit a pull request
-
-### Code Standards
-- **Frontend**: ESLint + Prettier
-- **Backend**: Black + isort + flake8
-- **Testing**: 80%+ coverage required
-- **Documentation**: Update README and inline docs
-
-## 📚 **API Documentation**
-
-### Authentication Endpoints
-```
-POST /api/auth/login/          # User login
-POST /api/auth/register/       # User registration
-POST /api/auth/refresh/        # Token refresh
-POST /api/auth/logout/         # User logout
-```
-
-### Core Endpoints
-```
-GET    /health/                # Health check
-GET    /api/users/             # List users
-GET    /api/posts/             # List posts
-POST   /api/posts/             # Create post
-```
-
-**Note: API documentation is incomplete. Use the health endpoint to verify service status.**
-
-
-## 🙏 **Acknowledgments**
-
-- **Vue.js Team** for the amazing framework
-- **Django Team** for the robust backend framework
-- **Open Source Community** for inspiration and tools
-
----
-
-**⚠️ REMEMBER: This is a development version. Do not deploy to production without completing the security and testing requirements.**
-
-**Made with ❤️ by the Trailium Team**
+## Deployment Artifacts (Archived)
+Aşağıdaki dosyalar yerel demo odağı için `infra/archive/` altına taşındı:
+- `apps/backend/Dockerfile` → `infra/archive/backend.Dockerfile`
+- `apps/frontend/Dockerfile` → `infra/archive/frontend.Dockerfile`
+- `infra/compose/docker-compose.prod.yml` → `infra/archive/`
+- `infra/compose/.env.prod.template` → `infra/archive/`
+
+Not: Bu repo yalnızca yerel demo içindir. Docker/K8s/Prod kurulumları kapsam dışıdır.
+
+## UI Patterns
+
+### ErrorCard Component
+Standardized error display with retry functionality across all pages:
+- **Props**: `title`, `message`, `details?`, `showRetry?`
+- **Emits**: `retry` event for retry button
+- **Accessibility**: `role="alert"`, `aria-live="polite"`, focus management
+- **Usage**: All pages use `<ErrorCard @retry="fetchAgain" />` for consistent error handling
+
+### State Machine
+Each page follows the same pattern:
+1. **Loading** → skeleton/loading state
+2. **Success** → render data or empty state
+3. **Error** → ErrorCard with retry button
+4. **Retry** → calls page-specific `fetchAgain()` function (e.g., `fetchFeed()`, `fetchPosts()`, `fetchAlbums()`, `fetchData()`, `fetchTodos()`)

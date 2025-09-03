@@ -1,3 +1,27 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { json } from '@/lib/http'
+
+const loading = ref(true)
+const items = ref([])
+const errorMsg = ref('')
+
+async function load() {
+  loading.value = true
+  errorMsg.value = ''
+  try {
+    const data = await json('/api/feed/posts?page_size=6')
+    items.value = data.results || []
+  } catch {
+    errorMsg.value = 'Unable to load followed users\' latest posts.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(load)
+</script>
+
 <template>
   <section>
     <div style="margin-bottom: 32px;">
@@ -21,7 +45,7 @@
           </div>
         </div>
         <p style="color: var(--c-text-muted); line-height: 1.5;">
-          Discover users, view profiles, and manage your connections. Follow users to see their content in your feed.
+          Discover users, view profiles, and manage your connections. Follow users to see their content.
         </p>
       </div>
 
@@ -36,7 +60,7 @@
           </div>
         </div>
         <p style="color: var(--c-text-muted); line-height: 1.5;">
-          Create and organize your todo lists with progress tracking. Break down tasks into subtasks for better organization.
+          Create and organize your todo lists with progress tracking. Break down tasks into subtasks.
         </p>
       </div>
 
@@ -51,7 +75,7 @@
           </div>
         </div>
         <p style="color: var(--c-text-muted); line-height: 1.5;">
-          Read posts from users, like and comment on content. Share your thoughts and engage with the community.
+          Read posts from users, like and comment on content.
         </p>
       </div>
 
@@ -66,38 +90,29 @@
           </div>
         </div>
         <p style="color: var(--c-text-muted); line-height: 1.5;">
-          Create photo albums and organize your memories. Share visual content with your followers.
+          Create photo albums and organize your memories.
         </p>
       </div>
 
-      <div class="card" style="padding: 24px; cursor: pointer;" @click="$router.push('/feed')">
-        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
-          <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #ff4db0, #ffb24d); border-radius: 12px; display: grid; place-items: center; color: white; font-size: 24px;">
-            🔄
-          </div>
-          <div>
-            <h3 style="font-size: 20px; font-weight: 600; margin: 0; color: var(--c-text);">Feed</h3>
-            <p style="margin: 4px 0 0; color: var(--c-text-muted);">Your personalized content stream</p>
-          </div>
+      <div class="card" style="padding: 24px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+          <div style="font-weight:700;">Latest from people you follow</div>
         </div>
-        <p style="color: var(--c-text-muted); line-height: 1.5;">
-          View posts from users you follow in a personalized feed. Stay updated with content that matters to you.
-        </p>
-      </div>
-
-      <div class="card" style="padding: 24px; cursor: pointer;" @click="$router.push('/settings')">
-        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
-          <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #ffb24d, #4db2ff); border-radius: 12px; display: grid; place-items: center; color: white; font-size: 24px;">
-            ⚙️
-          </div>
-          <div>
-            <h3 style="font-size: 20px; font-weight: 600; margin: 0; color: var(--c-text);">Settings</h3>
-            <p style="margin: 4px 0 0; color: var(--c-text-muted);">Manage your account</p>
-          </div>
-        </div>
-        <p style="color: var(--c-text-muted); line-height: 1.5;">
-          Update your profile, change password, and manage your account settings. Control your privacy and preferences.
-        </p>
+        <div v-if="errorMsg" style="color:var(--c-text-muted);">{{ errorMsg }}</div>
+        <div v-else-if="loading" style="color:var(--c-text-muted);">Loading…</div>
+        <div v-else-if="items.length === 0" style="color:var(--c-text-muted);">No recent posts from followed users.</div>
+        <ul v-else style="list-style:none; padding:0; margin:0; display:grid; gap:12px;">
+          <li v-for="p in items" :key="p.id" class="card" style="padding:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#ff4db0,#4db2ff); display:grid; place-items:center; color:#fff; font-weight:600; font-size:12px;">
+                {{ (p.user?.username || 'U').charAt(0).toUpperCase() }}
+              </div>
+              <div style="font-weight:600;">{{ p.user?.username || 'User' }}</div>
+              <div style="margin-left:auto; color:var(--c-text-muted); font-size:12px;">{{ new Date(p.created_at).toLocaleString() }}</div>
+            </div>
+            <div style="margin-top:8px; color:var(--c-text);">{{ p.title }}</div>
+          </li>
+        </ul>
       </div>
     </div>
   </section>

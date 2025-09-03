@@ -46,5 +46,3 @@ onMounted(() => { /* photos could be refreshed by parent via store */ })
 .inp { flex: 1; border: 1px solid var(--c-border); border-radius: 8px; padding: 8px 10px; }
 .btn { border: 1px solid var(--c-border); background: var(--c-surface-2); border-radius: 8px; padding: 6px 10px; }
 </style>
-
-

@@ -183,7 +183,6 @@ class Command(BaseCommand):
             Post.objects.filter(user__in=users_to_delete).delete()
 
             # Finally, delete the users
-            deleted_count = users_to_delete.count()
             users_to_delete.delete()
 
             # Get final summary

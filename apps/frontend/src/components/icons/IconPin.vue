@@ -6,5 +6,3 @@
 <script setup>
 defineProps({ size: { type: [Number,String], default: 18 } })
 </script>
-
-

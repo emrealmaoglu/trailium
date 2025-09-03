@@ -36,5 +36,3 @@ defineEmits(['toggle','edit','delete','toggle-sub','delete-sub'])
 .btn { border: 1px solid var(--c-border); border-radius: 8px; padding: 6px 8px; background: var(--c-surface-2); }
 .subs { margin-top: 8px; display: grid; gap: 6px; }
 </style>
-
-

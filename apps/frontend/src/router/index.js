@@ -4,7 +4,7 @@ import { useSessionStore } from '@/stores/session'
 const routes = [
   {
     path: '/',
-    redirect: '/users',
+    redirect: '/feed',
     meta: { requiresAuth: true } // Default for authenticated section
   },
   {
@@ -15,8 +15,7 @@ const routes = [
   },
   {
     path: '/users/:id',
-    name: 'UserDetail',
-    component: () => import('@/pages/UserDetail.vue'),
+    redirect: to => `/users/${to.params.id}/todos`,
     meta: { requiresAuth: true }
   },
   {
@@ -43,24 +42,39 @@ const routes = [
     component: () => import('@/pages/Albums.vue'),
     meta: { requiresAuth: true }
   },
-  // Connections page is not present; route removed to avoid build error
-  // Feed and other features are out of scope for Sprint 0+1
+  {
+    path: '/feed',
+    name: 'Feed',
+    component: () => import('@/pages/Feed.vue'),
+    meta: { requiresAuth: true }
+  },
   {
     path: '/profile',
     name: 'Profile',
     component: () => import('@/pages/Profile.vue'),
     meta: { requiresAuth: true }
   },
-  // Settings remains but not implemented in this sprint
-  // AdminDanger and CookieTest are out of scope
   {
-    path: '/login',
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('@/pages/Settings.vue'),
+    meta: { requiresAuth: true }
+  },
+  // AdminDanger route is optional for local demo; gated by env flag
+  ...(import.meta.env.VITE_ENABLE_ADMIN_DEMO === 'true' ? [{
+    path: '/admin-danger',
+    name: 'AdminDanger',
+    component: () => import('@/pages/AdminDanger.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  }] : []),
+  {
+    path: '/auth/login',
     name: 'Login',
     component: () => import('@/pages/Login.vue'),
     meta: { requiresAuth: false }
   },
   {
-    path: '/register',
+    path: '/auth/register',
     name: 'Register',
     component: () => import('@/pages/Register.vue'),
     meta: { requiresAuth: false }
@@ -77,7 +91,7 @@ router.beforeEach((to, from, next) => {
 
   // Check if route requires authentication
   if (to.meta.requiresAuth && !session.isLoggedIn) {
-    next('/login')
+    next('/auth/login')
     return
   }
 
@@ -88,7 +102,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // If user is logged in and trying to access auth pages, redirect to home
-  if (session.isLoggedIn && (to.path === '/login' || to.path === '/register')) {
+  if (session.isLoggedIn && (to.path === '/auth/login' || to.path === '/auth/register')) {
     next('/')
     return
   }

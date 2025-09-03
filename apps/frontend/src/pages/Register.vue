@@ -66,4 +66,3 @@ async function submit(e) {
 .error { color: #dc2626; font-size: 13px; text-align: center; background: #fef2f2; border: 1px solid #fecaca; padding: 8px 10px; border-radius: 8px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>
-

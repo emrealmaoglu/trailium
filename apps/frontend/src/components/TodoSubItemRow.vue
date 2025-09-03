@@ -19,5 +19,3 @@ defineEmits(['toggle','delete'])
 .title.done { text-decoration: line-through; color: var(--c-text-muted); }
 .del { border: 1px solid var(--c-border); background: var(--c-surface-2); border-radius: 6px; width: 24px; height: 24px; line-height: 1; }
 </style>
-
-

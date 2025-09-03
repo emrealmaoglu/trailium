@@ -250,4 +250,3 @@ export function setLocale(lang: 'tr' | 'en') {
 }
 
 export default i18n
-

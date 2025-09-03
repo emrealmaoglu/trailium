@@ -59,24 +59,31 @@ function handleKeydown(event) {
     switch (secondKey) {
       case 'h':
         router.push('/')
+        showNotification('Navigated to Home', 'success', 2000)
         break
       case 'u':
         router.push('/users')
+        showNotification('Navigated to Users', 'success', 2000)
         break
       case 't':
         router.push('/todos')
+        showNotification('Navigated to Todos', 'success', 2000)
         break
       case 'p':
         router.push('/posts')
+        showNotification('Navigated to Posts', 'success', 2000)
         break
       case 'a':
         router.push('/albums')
+        showNotification('Navigated to Albums', 'success', 2000)
         break
       case 'f':
         router.push('/feed')
+        showNotification('Navigated to Feed', 'success', 2000)
         break
       case 's':
         router.push('/settings')
+        showNotification('Navigated to Settings', 'success', 2000)
         break
     }
 

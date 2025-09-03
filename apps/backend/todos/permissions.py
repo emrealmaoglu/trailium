@@ -1,5 +1,6 @@
 from rest_framework.permissions import BasePermission
-from .models import TodoList, TodoItem, TodoSubItem
+
+from .models import TodoItem, TodoList, TodoSubItem
 
 
 class IsOwnerOrAdmin(BasePermission):
@@ -22,5 +23,3 @@ class IsOwnerOrAdmin(BasePermission):
         if isinstance(obj, TodoSubItem):
             return obj.parent.list.user_id == request.user.id
         return False
-
-

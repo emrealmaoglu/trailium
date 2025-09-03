@@ -9,26 +9,12 @@ const session = useSessionStore()
 
 // Global notification system
 const notifications = ref([])
-let notificationCounter = 0
-
-// Generate unique ID for notifications
-function generateNotificationId() {
-  return `notification-${Date.now()}-${++notificationCounter}`
-}
 
 function showNotification(message, type = 'info', duration = 5000) {
-  const id = generateNotificationId()
-  const notification = {
-    id,
-    message,
-    type,
-    duration,
-    timestamp: Date.now()
-  }
-
+  const id = Date.now() + Math.random()
+  const notification = { id, message, type, duration }
   notifications.value.push(notification)
 
-  // Auto-remove notification after duration
   if (duration > 0) {
     setTimeout(() => {
       removeNotification(id)
@@ -45,14 +31,9 @@ function removeNotification(id) {
   }
 }
 
-function clearAllNotifications() {
-  notifications.value = []
-}
-
 // Provide notification system to all components
 provide('showNotification', showNotification)
 provide('removeNotification', removeNotification)
-provide('clearAllNotifications', clearAllNotifications)
 
 // Load session from storage on mount
 onMounted(() => {
@@ -100,19 +81,6 @@ onMounted(() => {
 
     <!-- Global Notifications -->
     <div class="notifications-container">
-      <!-- Notification Header -->
-      <div v-if="notifications.length > 0" class="notifications-header">
-        <span class="notifications-count">{{ notifications.length }} notification(s)</span>
-        <button
-          @click="clearAllNotifications"
-          class="clear-all-btn"
-          title="Clear all notifications"
-        >
-          Clear All
-        </button>
-      </div>
-
-      <!-- Individual Notifications -->
       <div
         v-for="notification in notifications"
         :key="notification.id"
@@ -129,7 +97,6 @@ onMounted(() => {
           <button
             @click="removeNotification(notification.id)"
             class="notification-close"
-            title="Dismiss notification"
           >
             ×
           </button>
@@ -151,8 +118,8 @@ onMounted(() => {
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   line-height: 1.6;
-  color: #333;
-  background-color: #f5f5f5;
+  color: #111; /* improved default text contrast */
+  background-color: #f3f4f6; /* softer gray for unauth layout */
 }
 
 #app {
@@ -166,7 +133,7 @@ body {
 
 .auth-layout {
   min-height: 100vh;
-  background: #ffffff;
+  background: #f3f4f6; /* gray background for contrast */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -174,13 +141,24 @@ body {
 }
 
 .auth-container {
-  background: white;
+  background: #ffffff;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   padding: 40px;
   width: 100%;
   max-width: 500px;
   text-align: center;
+  color: #111; /* ensure readable text */
+}
+
+.auth-container a {
+  color: #2563eb; /* accessible link color */
+  text-decoration: none;
+}
+
+.auth-container a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
 }
 
 .auth-header {
@@ -202,12 +180,12 @@ body {
 .logo-text {
   font-size: 28px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #111111;
   margin: 0;
 }
 
 .auth-subtitle {
-  color: #6b7280;
+  color: #374151; /* darker muted for readability */
   font-size: 16px;
   margin: 0;
 }
@@ -222,12 +200,12 @@ body {
 }
 
 .auth-footer p {
-  color: #9ca3af;
+  color: #6b7280;
   font-size: 14px;
   margin: 0;
 }
 
-/* Enhanced Notifications */
+/* Notifications */
 .notifications-container {
   position: fixed;
   top: 20px;
@@ -237,41 +215,6 @@ body {
   flex-direction: column;
   gap: 12px;
   max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.notifications-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.notifications-count {
-  font-weight: 500;
-}
-
-.clear-all-btn {
-  background: none;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  transition: all 0.2s ease;
-}
-
-.clear-all-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: #374151;
 }
 
 .notification-item {
@@ -280,7 +223,6 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   animation: slideIn 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .notification-success {
@@ -295,28 +237,20 @@ body {
   border-left: 4px solid #f59e0b;
 }
 
-.notification-info {
-  border-left: 4px solid #3b82f6;
-}
-
 .notification-content {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   padding: 16px;
 }
 
 .notification-icon {
   font-size: 18px;
-  flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .notification-message {
   flex: 1;
   font-size: 14px;
-  line-height: 1.4;
-  word-wrap: break-word;
 }
 
 .notification-close {
@@ -328,12 +262,6 @@ body {
   padding: 4px;
   border-radius: 4px;
   transition: all 0.2s ease;
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .notification-close:hover {
@@ -366,59 +294,24 @@ body {
 
 /* Dark theme support */
 @media (prefers-color-scheme: dark) {
+  .auth-layout {
+    background: #0f172a;
+  }
   .auth-container {
     background: #1f2937;
-    color: white;
+    color: #ffffff;
   }
-
   .logo-text {
-    color: white;
+    color: #ffffff;
   }
-
   .auth-subtitle {
-    color: #9ca3af;
+    color: #cbd5e1;
   }
-
   .auth-footer {
     border-top-color: #4b5563;
   }
-
   .auth-footer p {
-    color: #6b7280;
-  }
-
-  .notifications-header {
-    background: rgba(31, 41, 55, 0.95);
     color: #9ca3af;
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .notification-item {
-    background: #1f2937;
-    color: white;
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .notification-close:hover {
-    background: #374151;
-    color: #d1d5db;
-  }
-}
-
-/* Responsive notifications */
-@media (max-width: 768px) {
-  .notifications-container {
-    left: 20px;
-    right: 20px;
-    max-width: none;
-  }
-
-  .notification-content {
-    padding: 12px;
-  }
-
-  .notification-message {
-    font-size: 13px;
   }
 }
 </style>

@@ -34,5 +34,3 @@ defineEmits<{ 'update:page': [value: number] }>()
 .btn[disabled] { opacity: .5; cursor: not-allowed; }
 .info { color: var(--c-text-muted); font-size: 14px; }
 </style>
-
-

@@ -8,13 +8,10 @@ Kurallar
 - followers → yalnızca kabul edilmiş takipçiler görebilir.
 - private → yalnızca sahip (ve admin) görebilir.
 """
-from typing import Iterable
 
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-
 from social.models import Follow
-
 
 User = get_user_model()
 
@@ -98,5 +95,3 @@ def filter_queryset_by_visibility(qs, request_user: User, owner_field: str = "us
     allowed_ids.add(request_user.id)
 
     return qs.filter(**{owner_id_field: list(allowed_ids)})
-
-

@@ -74,5 +74,3 @@
 
 ### Next Step
 Users grid + user card components (hover rows, icon list, mock data).
-
-

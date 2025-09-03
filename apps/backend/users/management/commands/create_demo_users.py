@@ -1,3 +1,4 @@
+import os
 import random
 from datetime import datetime, timedelta
 
@@ -80,6 +81,9 @@ class Command(BaseCommand):
     def create_demo_users(self, count):
         """Create demo users with Turkish names"""
         users = []
+
+        # Configurable demo sources via environment variables
+        avatar_base = os.getenv("DEMO_AVATAR_BASE", "https://i.pravatar.cc")
 
         # Turkish names data
         male_names = [
@@ -225,9 +229,8 @@ class Command(BaseCommand):
             district = f"Semt {random.randint(1, 20)}"
             address = f"{district}, {city}, Türkiye"
 
-            # Random company and website
+            # Random company
             company = random.choice(companies) if random.random() > 0.3 else ""
-            website = f"https://{username}.com" if random.random() > 0.5 else ""
 
             # Random about text
             about_texts = [
@@ -255,7 +258,7 @@ class Command(BaseCommand):
                 is_premium=is_premium,
                 is_private=is_private,
                 gender="M" if is_male else "F",
-                avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={username}",
+                avatar=f"{avatar_base.rstrip('/')}/150?u={username}&img={random.randint(1, 70)}",
             )
 
             users.append(user)
@@ -266,6 +269,7 @@ class Command(BaseCommand):
     def create_social_content(self, users):
         """Create posts, comments, likes, albums, and photos"""
         self.stdout.write("Creating social content...")
+        photo_base = os.getenv("DEMO_PHOTO_BASE", "https://picsum.photos")
 
         # Create posts
         post_texts = [
@@ -334,8 +338,8 @@ class Command(BaseCommand):
                     Photo.objects.create(
                         album=album,
                         title=f"Fotoğraf {random.randint(1, 100)}",
-                        url=f"https://picsum.photos/400/300?random={random.randint(1, 1000)}",
-                        thumbnail_url=f"https://picsum.photos/200/150?random={random.randint(1, 1000)}",
+                        url=f"{photo_base.rstrip('/')}/400/300?random={random.randint(1, 1000)}",
+                        thumbnail_url=f"{photo_base.rstrip('/')}/200/150?random={random.randint(1, 1000)}",
                         created_at=datetime.now()
                         - timedelta(days=random.randint(0, 20)),
                     )

@@ -6,12 +6,11 @@ Strateji
 - demoNN@example.test deseni ile eşleşen kullanıcıları ve bağlı içerikleri siler.
 - Güvenli sıralama: photo → album → comment → like → todo sub/item/list → post → user.
 """
-from django.core.management.base import BaseCommand
+
 from django.contrib.auth import get_user_model
-
-from social.models import Post, Comment, Like, Album, Photo, Follow
-from todos.models import TodoList, TodoItem, TodoSubItem
-
+from django.core.management.base import BaseCommand
+from social.models import Album, Comment, Follow, Like, Photo, Post
+from todos.models import TodoItem, TodoList, TodoSubItem
 
 User = get_user_model()
 
@@ -40,8 +39,8 @@ class Command(BaseCommand):
 
         user_del = User.objects.filter(id__in=[u.id for u in users]).delete()[0]
 
-        self.stdout.write(self.style.SUCCESS(
-            f"Silindi: photos={photo_del}, albums={album_del}, comments={comment_del}, likes={like_del}, subitems={sub_del}, items={item_del}, lists={list_del}, posts={post_del}, users={user_del}"
-        ))
-
-
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Silindi: photos={photo_del}, albums={album_del}, comments={comment_del}, likes={like_del}, subitems={sub_del}, items={item_del}, lists={list_del}, posts={post_del}, users={user_del}"
+            )
+        )

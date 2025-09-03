@@ -1,6 +1,6 @@
 @baseUrl = http://127.0.0.1:8000
-@access = 
-@refresh = 
+@access =
+@refresh =
 
 ### Auth: Register
 POST {{baseUrl}}/api/auth/register/
@@ -79,5 +79,3 @@ Authorization: Bearer {{access}}
 ### Todos: Get list
 GET {{baseUrl}}/api/todos/lists/1/
 Authorization: Bearer {{access}}
-
-

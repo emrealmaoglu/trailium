@@ -328,7 +328,7 @@ class PerformanceTestMixin:
         import time
 
         start_time = time.time()
-        response = self.client.get(endpoint)
+        _ = self.client.get(endpoint)
         end_time = time.time()
 
         response_time = (end_time - start_time) * 1000  # Convert to milliseconds
@@ -345,7 +345,7 @@ class PerformanceTestMixin:
         from django.test.utils import CaptureQueriesContext
 
         with CaptureQueriesContext(connection) as context:
-            response = self.client.get(endpoint)
+            _ = self.client.get(endpoint)
 
         query_count = len(context.captured_queries)
         self.assertLess(

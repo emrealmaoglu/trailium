@@ -37,5 +37,3 @@ a { color: var(--c-accent); text-decoration: none; }
 .nav__a { outline: none; }
 .nav__a:focus { outline: 2px solid var(--c-accent); outline-offset: 2px; }
 .nav__a.is-active { border-left: 3px solid var(--c-accent); background: var(--c-surface-2); font-weight: 600; }
-
-

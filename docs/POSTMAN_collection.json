@@ -1,0 +1,161 @@
+{
+  "info": {
+    "name": "Trailium Local API",
+    "_postman_id": "e2c0f8a8-7e7b-4f9e-9e66-111111111111",
+    "description": "Local Postman collection for Trailium demo. Base URL and access token are parameterized.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/auth/", "host": ["{{baseUrl}}"], "path": ["api", "auth", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo01@example.test\",\n  \"password\": \"Demo1234!\",\n  \"username\": \"demo01\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.access) { pm.environment.set('accessToken', json.access); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/auth/login/", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo01@example.test\",\n  \"password\": \"Demo1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/auth/refresh/", "host": ["{{baseUrl}}"], "path": ["api", "auth", "refresh", ""] },
+            "body": { "mode": "raw", "raw": "{\n  \"refresh\": \"{{refreshToken}}\"\n}" }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/auth/logout/", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/users/", "host": ["{{baseUrl}}"], "path": ["api", "users", ""] } }
+        },
+        {
+          "name": "Me",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/users/me/", "host": ["{{baseUrl}}"], "path": ["api", "users", "me", ""] } }
+        },
+        {
+          "name": "Patch Me",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/users/me/", "host": ["{{baseUrl}}"], "path": ["api", "users", "me", ""] },
+            "body": { "mode": "raw", "raw": "{\n  \"display_name\": \"Demo User\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Todos",
+      "item": [
+        { "name": "List Todo Lists", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/todo-lists/", "host": ["{{baseUrl}}"], "path": ["api", "todo-lists", ""] } } },
+        { "name": "Create Todo List", "request": { "method": "POST", "header": [ {"key":"Content-Type","value":"application/json"} ], "url": { "raw": "{{baseUrl}}/api/todo-lists/", "host": ["{{baseUrl}}"], "path": ["api", "todo-lists", ""] }, "body": {"mode":"raw","raw":"{\n  \"title\": \"Daily\"\n}"} } },
+        { "name": "List Todo Items", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/todo-items/", "host": ["{{baseUrl}}"], "path": ["api", "todo-items", ""] } } },
+        { "name": "Toggle Todo Item", "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/todo-items/1/toggle-done/", "host": ["{{baseUrl}}"], "path": ["api", "todo-items", "1", "toggle-done", ""] } } }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        { "name": "List Posts", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/posts/", "host": ["{{baseUrl}}"], "path": ["api", "posts", ""] } } },
+        { "name": "Create Post", "request": { "method": "POST", "header": [ {"key":"Content-Type","value":"application/json"} ], "url": { "raw": "{{baseUrl}}/api/posts/", "host": ["{{baseUrl}}"], "path": ["api", "posts", ""] }, "body": {"mode":"raw","raw":"{\n  \"content\": \"Hello world\"\n}"} } },
+        { "name": "Like Post", "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/posts/1/like/", "host": ["{{baseUrl}}"], "path": ["api", "posts", "1", "like", ""] } } },
+        { "name": "Unlike Post", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/posts/1/like/", "host": ["{{baseUrl}}"], "path": ["api", "posts", "1", "like", ""] } } },
+        { "name": "Comments List", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/posts/1/comments/", "host": ["{{baseUrl}}"], "path": ["api", "posts", "1", "comments", ""] } } },
+        { "name": "Create Comment", "request": { "method": "POST", "header": [ {"key":"Content-Type","value":"application/json"} ], "url": { "raw": "{{baseUrl}}/api/posts/1/comments/", "host": ["{{baseUrl}}"], "path": ["api", "posts", "1", "comments", ""
+          ] }, "body": {"mode":"raw","raw":"{\n  \"content\": \"Nice!\"\n}"} } }
+      ]
+    },
+    {
+      "name": "Albums",
+      "item": [
+        { "name": "List Albums", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/albums/", "host": ["{{baseUrl}}"], "path": ["api", "albums", ""] } } },
+        { "name": "Create Album", "request": { "method": "POST", "header": [ {"key":"Content-Type","value":"application/json"} ], "url": { "raw": "{{baseUrl}}/api/albums/", "host": ["{{baseUrl}}"], "path": ["api", "albums", ""] }, "body": {"mode":"raw","raw":"{\n  \"title\": \"My Album\"\n}"} } },
+        { "name": "List Photos of Album", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/albums/1/photos/", "host": ["{{baseUrl}}"], "path": ["api", "albums", "1", "photos", ""] } } }
+      ]
+    },
+    {
+      "name": "Follow",
+      "item": [
+        { "name": "Follow User", "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/follows/", "host": ["{{baseUrl}}"], "path": ["api", "follows", ""] }, "body": {"mode":"raw","raw":"{\n  \"to_user_id\": 2\n}"}, "header": [ {"key":"Content-Type","value":"application/json"} ] } },
+        { "name": "Unfollow User", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/follows/1/", "host": ["{{baseUrl}}"], "path": ["api", "follows", "1", ""] } } },
+        { "name": "Follow Status", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/follows/1/", "host": ["{{baseUrl}}"], "path": ["api", "follows", "1", ""] } } }
+      ]
+    },
+    {
+      "name": "Feed",
+      "item": [
+        { "name": "Get Feed", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/feed/posts", "host": ["{{baseUrl}}"], "path": ["api", "feed", "posts"] } } }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const token = pm.environment.get('accessToken');",
+          "if (token) { pm.request.headers.add({ key: 'Authorization', value: `Bearer ${token}` }); }"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
+  ]
+}

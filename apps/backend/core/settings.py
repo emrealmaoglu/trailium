@@ -21,13 +21,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# Local demo defaults only
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = "django-insecure-rpkje)v3^s1y^%+^yy!ffkts@#lp6qo@#rr7o%@3s%_j7i6c(x"
+
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# Local demo secret key; can be overridden via env
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-dev-key")
-
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -58,51 +58,28 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "SEARCH_PARAM": "q",
     "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
+        "core.throttling.PremiumUserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/hour", "user": "1000/hour"},
-    "DEFAULT_RENDERER_CLASSES": [
-        "rest_framework.renderers.JSONRenderer",
-    ],
-    "DEFAULT_PARSER_CLASSES": [
-        "rest_framework.parsers.JSONParser",
-    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "user": "1000/hour",
+        "premium": "5000/hour",
+    },
 }
 
-# SimpleJWT local demo settings
+# SimpleJWT base settings; login view will override refresh lifetime per-request
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
-    "UPDATE_LAST_LOGIN": True,
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-    "VERIFYING_KEY": None,
-    "AUDIENCE": None,
-    "ISSUER": None,
-    "JWK_URL": None,
-    "LEEWAY": 0,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
-    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-    "TOKEN_TYPE_CLAIM": "token_type",
-    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
-    "JTI_CLAIM": "jti",
-    "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
-    "SLIDING_TOKEN_LIFETIME": timedelta(hours=1),
-    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+    "UPDATE_LAST_LOGIN": False,
 }
 
-# CORS - local demo permissive
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+ALLOWED_HOSTS = ["*"]
 
-# Middleware Configuration
+CORS_ALLOW_ALL_ORIGINS = True
+
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -123,7 +100,6 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
@@ -134,177 +110,81 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-# Security/Cookie settings simplified for local demo
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = "Lax"
 
-# Logging Configuration
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname} {message}",
-            "style": "{",
-        },
-        "performance": {
-            "format": "{asctime} {levelname} {message} - {duration}ms",
-            "style": "{",
-        },
-        "security": {
-            "format": "SECURITY: {levelname} {asctime} {module} {message}",
-            "style": "{",
-        },
-    },
-    "filters": {
-        "require_debug_true": {
-            "()": "django.utils.log.RequireDebugTrue",
-        },
-        "require_debug_false": {
-            "()": "django.utils.log.RequireDebugFalse",
-        },
-    },
-    "handlers": {
-        "console": {
-            "level": "INFO",
-            "filters": ["require_debug_true"],
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-        "file": {
-            "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR / "logs" / "django.log",
-            "formatter": "verbose",
-            "maxBytes": 10 * 1024 * 1024,  # 10MB
-            "backupCount": 5,
-        },
-        "performance": {
-            "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR / "logs" / "performance.log",
-            "formatter": "performance",
-            "maxBytes": 10 * 1024 * 1024,  # 10MB
-            "backupCount": 3,
-        },
-        "error_file": {
-            "level": "ERROR",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR / "logs" / "error.log",
-            "formatter": "verbose",
-            "maxBytes": 10 * 1024 * 1024,  # 10MB
-            "backupCount": 5,
-        },
-        "security_file": {
-            "level": "WARNING",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR / "logs" / "security.log",
-            "formatter": "security",
-            "maxBytes": 5 * 1024 * 1024,  # 5MB
-            "backupCount": 3,
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "django.request": {
-            "handlers": ["error_file"],
-            "level": "ERROR",
-            "propagate": False,
-        },
-        "django.security": {
-            "handlers": ["security_file"],
-            "level": "WARNING",
-            "propagate": False,
-        },
-        "django.db.backends": {
-            "handlers": ["console"] if DEBUG else [],
-            "level": "DEBUG" if DEBUG else "INFO",
-            "propagate": False,
-        },
-        "performance": {
-            "handlers": ["performance"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "users": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "social": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "todos": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "security": {
-            "handlers": ["security_file"],
-            "level": "WARNING",
-            "propagate": False,
-        },
-    },
+# Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
+
+def _postgres_config_from_env():
+    if os.environ.get("USE_POSTGRES") != "1":
+        return None
+    host = os.environ.get("POSTGRES_HOST") or os.environ.get("PGHOST")
+    name = os.environ.get("POSTGRES_DB") or os.environ.get("PGDATABASE")
+    user = os.environ.get("POSTGRES_USER") or os.environ.get("PGUSER")
+    password = os.environ.get("POSTGRES_PASSWORD") or os.environ.get("PGPASSWORD")
+    port = os.environ.get("POSTGRES_PORT") or os.environ.get("PGPORT") or "5432"
+    if host and name and user and password:
+        return {
+            "ENGINE": "django.db.backends.postgresql",
+            "HOST": host,
+            "PORT": port,
+            "NAME": name,
+            "USER": user,
+            "PASSWORD": password,
+        }
+    return None
+
+
+_pg = _postgres_config_from_env()
+DATABASES = {
+    "default": _pg
+    or {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
 }
 
-# Create logs directory if it doesn't exist
-LOGS_DIR = BASE_DIR / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
 
-# Cache Configuration
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "unique-snowflake",
-        "TIMEOUT": 300,  # 5 minutes
-        "OPTIONS": {
-            "MAX_ENTRIES": 1000,
-        },
+# Password validation
+# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-}
-
-# Spectacular Settings for API Documentation
-SPECTACULAR_SETTINGS = {
-    "TITLE": "Trailium API",
-    "DESCRIPTION": "Social platform API with user management, posts, albums, and todos",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
-    "COMPONENT_SPLIT_REQUEST": True,
-    "SCHEMA_PATH_PREFIX": "/api/",
-    "SWAGGER_UI_SETTINGS": {
-        "deepLinking": True,
-        "persistAuthorization": True,
-        "displayOperationId": True,
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
-}
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+]
 
-# Disable prod-like monitoring/rate limiting for local demo
-PERFORMANCE_MONITORING = {"ENABLED": False}
-RATE_LIMITING = {"ENABLED": False}
+
+# Internationalization
+# https://docs.djangoproject.com/en/5.2/topics/i18n/
+
+LANGUAGE_CODE = "en-us"
+
+TIME_ZONE = "UTC"
+
+USE_I18N = True
+
+USE_TZ = True
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.2/howto/static-files/
+
+STATIC_URL = "static/"
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User model
 AUTH_USER_MODEL = "users.User"
-
-# Database: Local PostgreSQL only (no SQLite fallback)
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "trailium"),
-        "USER": os.environ.get("POSTGRES_USER", "trailium"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "trailium"),
-        "HOST": os.environ.get("POSTGRES_HOST", "127.0.0.1"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-    }
-}

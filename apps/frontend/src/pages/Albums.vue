@@ -10,11 +10,9 @@ const activeAlbumId = ref(null)
 const creating = ref(false)
 const newTitle = ref('')
 const uploading = ref(false)
-const photoTitle = ref('')
-const photoUrl = ref('')
 const photoFile = ref(null)
+const photoTitle = ref('')
 const showUploadForm = ref(false)
-const createModalOpen = ref(false)
 
 async function fetchAlbums() {
   loading.value = true
@@ -44,36 +42,31 @@ async function createAlbum() {
   if (!newTitle.value.trim()) return
   creating.value = true
   try {
-    const form = new FormData()
-    form.append('title', newTitle.value)
-    form.append('is_published', 'true')
-    form.append('visibility', 'public')
-    await json('/api/albums/', { method: 'POST', body: form })
+    await json('/api/albums/', { method: 'POST', body: JSON.stringify({ title: newTitle.value }) })
     newTitle.value = ''
     await fetchAlbums()
-    createModalOpen.value = false
   } finally {
     creating.value = false
   }
 }
 
 async function uploadPhoto() {
-  if (!activeAlbumId.value) return
-  if (!photoTitle.value.trim() && !photoFile.value) return
+  if (!photoFile.value || !photoTitle.value.trim() || !activeAlbumId.value) return
 
   uploading.value = true
   try {
-    const form = new FormData()
-    if (photoTitle.value) form.append('title', photoTitle.value)
-    if (photoFile.value) form.append('file', photoFile.value)
-    else if (photoUrl.value) {
-      // Fallback: allow url-based upload too
-      form.append('url', photoUrl.value)
-    }
-    await json(`/api/albums/${activeAlbumId.value}/photos/`, { method: 'POST', body: form })
+    const formData = new FormData()
+    formData.append('title', photoTitle.value)
+    formData.append('album', activeAlbumId.value)
+    formData.append('image', photoFile.value)
+
+    await json(`/api/albums/${activeAlbumId.value}/photos/`, {
+      method: 'POST',
+      body: formData,
+      headers: {} // Let browser set content-type for FormData
+    })
 
     photoTitle.value = ''
-    photoUrl.value = ''
     photoFile.value = null
     showUploadForm.value = false
     await selectAlbum(activeAlbumId.value)
@@ -84,13 +77,13 @@ async function uploadPhoto() {
   }
 }
 
-function handleUrlPrefill() {
-  if (photoUrl.value && !photoTitle.value) {
-    try {
-      const u = new URL(photoUrl.value)
-      const last = u.pathname.split('/').filter(Boolean).pop() || ''
-      photoTitle.value = last || 'Photo'
-    } catch {}
+function handleFileSelect(event) {
+  const file = event.target.files[0]
+  if (file && file.type.startsWith('image/')) {
+    photoFile.value = file
+    if (!photoTitle.value) {
+      photoTitle.value = file.name.replace(/\.[^/.]+$/, '') // Remove extension
+    }
   }
 }
 
@@ -106,40 +99,28 @@ onMounted(() => {
   <div class="container">
     <div style="display:flex; align-items:center; gap:8px; margin:0 0 16px;">
       <h2 style="margin:0; font-size:22px; font-weight:700;">Photo Albums</h2>
-      <button @click="createModalOpen = true" style="margin-left:auto; border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:10px; padding:10px 16px; cursor:pointer; font-size:14px; font-weight:500; display:flex; align-items:center; gap:8px;">
-        <span>✏️</span>
-        Create Album
-      </button>
+      <button @click="fetchAlbums" style="margin-left:auto; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:10px; padding:8px 12px; cursor:pointer; font-size:13px;">Refresh</button>
     </div>
 
-    <!-- Create Album Modal -->
-    <div v-if="createModalOpen" class="modal-overlay" @click="createModalOpen = false">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header" style="display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid var(--c-border);">
-          <h3 style="margin:0; font-size:18px; font-weight:700;">Create New Album</h3>
-          <button @click="createModalOpen = false" class="close-btn" style="background:none; border:none; font-size:22px; cursor:pointer; color:var(--c-text-muted);">×</button>
-        </div>
-
-        <div class="modal-body" style="padding:16px;">
-          <form @submit.prevent="createAlbum" style="display:grid; gap:12px;">
-            <div>
-              <label style="display:block; font-weight:500; margin-bottom:6px; font-size:13px;">Album Title</label>
-              <input v-model="newTitle" placeholder="Enter album title" required style="width:100%; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:10px; padding:10px 12px; font-size:14px;" />
-            </div>
-          </form>
-        </div>
-
-        <div class="modal-footer" style="display:flex; gap:8px; justify-content:flex-end; padding:16px; border-top:1px solid var(--c-border);">
-          <button @click="createModalOpen = false" style="border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:8px; padding:8px 16px; cursor:pointer; font-size:13px;">Cancel</button>
-          <button @click="createAlbum" :disabled="creating || !newTitle.trim()" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:8px; padding:8px 16px; cursor:pointer; font-size:13px; font-weight:500;">
-            {{ creating ? 'Creating…' : 'Create Album' }}
-          </button>
-        </div>
-      </div>
+    <!-- Create Album Form -->
+    <div class="card" style="padding:16px; margin-bottom:16px;">
+      <h3 style="margin:0 0 12px; font-size:16px; font-weight:600;">Create New Album</h3>
+      <form @submit.prevent="createAlbum" style="display:flex; gap:12px; align-items:center;">
+        <input v-model="newTitle" placeholder="Enter album title" required style="flex:1; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:10px; padding:10px 12px; font-size:14px;" />
+        <button :disabled="creating || !newTitle.trim()" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:10px; padding:10px 16px; cursor:pointer; font-size:14px; font-weight:500;">
+          {{ creating ? 'Creating…' : 'Create Album' }}
+        </button>
+      </form>
     </div>
 
-    <div v-if="loading" class="card" style="padding:16px;">Loading…</div>
-    <div v-else-if="errorMsg" class="card" style="padding:16px; color:var(--c-text-muted);">{{ errorMsg }}</div>
+    <div v-if="loading" class="grid" style="grid-template-columns: 280px 1fr; gap:20px;">
+      <div class="card" style="padding:16px; height:240px;"></div>
+      <div class="card" style="padding:20px; min-height:400px;"></div>
+    </div>
+    <div v-else-if="errorMsg" class="card" style="padding:16px; color:var(--c-text-muted); display:flex; align-items:center; gap:12px;">
+      <span style="flex:1;">{{ errorMsg }}</span>
+      <button @click="fetchAlbums" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:10px; padding:8px 12px; cursor:pointer; font-size:13px;">Retry</button>
+    </div>
 
     <div v-else-if="albums.length === 0" class="card" style="padding:32px; text-align:center; color:var(--c-text-muted);">
       <div style="font-size:48px; margin-bottom:16px;">📸</div>
@@ -187,15 +168,13 @@ onMounted(() => {
               </div>
 
               <div>
-                <label style="display:block; font-weight:500; margin-bottom:6px; font-size:13px;">Choose Image</label>
-                <input type="file" accept="image/*" @change="e => { photoFile.value = e.target.files?.[0] || null }" />
-                <div style="font-size:12px; color:var(--c-text-muted); margin-top:6px;">or paste an image URL:</div>
-                <input v-model="photoUrl" @blur="handleUrlPrefill" type="url" placeholder="https://example.com/image.jpg" style="width:100%; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:8px; padding:8px 10px; font-size:13px;" />
+                <label style="display:block; font-weight:500; margin-bottom:6px; font-size:13px;">Select Image</label>
+                <input type="file" @change="handleFileSelect" accept="image/*" required style="width:100%; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:8px; padding:8px 10px; font-size:13px;" />
               </div>
 
               <div style="display:flex; gap:8px; justify-content:flex-end;">
                 <button type="button" @click="showUploadForm = false" style="border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:8px; padding:8px 16px; cursor:pointer; font-size:13px;">Cancel</button>
-                <button type="submit" :disabled="uploading || !photoTitle.trim() || (!photoFile && !photoUrl.trim())" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:8px; padding:8px 16px; cursor:pointer; font-size:13px; font-weight:500;">
+                <button type="submit" :disabled="uploading || !photoFile || !photoTitle.trim()" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:8px; padding:8px 16px; cursor:pointer; font-size:13px; font-weight:500;">
                   {{ uploading ? 'Uploading…' : 'Upload Photo' }}
                 </button>
               </div>
@@ -211,7 +190,7 @@ onMounted(() => {
 
           <div v-else class="grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:16px;">
             <div v-for="p in photos" :key="p.id" class="card" style="padding:12px; text-align:center; transition: all 0.2s ease; hover:transform:scale(1.02);">
-              <img :src="p.thumbnail_url_file || p.thumbnail_url || p.file_url || p.url" :alt="p.title || 'Photo'" style="width:100%; height:140px; object-fit:cover; border-radius:8px; margin-bottom:8px;" />
+              <img :src="p.thumbnail_url || p.url" :alt="p.title || 'Photo'" style="width:100%; height:140px; object-fit:cover; border-radius:8px; margin-bottom:8px;" />
               <div style="font-size:13px; font-weight:500; color:var(--c-text);">{{ p.title || 'Untitled' }}</div>
               <div v-if="p.created_at" style="font-size:11px; color:var(--c-text-muted); margin-top:4px;">
                 {{ new Date(p.created_at).toLocaleDateString() }}

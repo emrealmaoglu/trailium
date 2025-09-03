@@ -95,5 +95,3 @@ onMounted(async () => {
 .back { color: var(--c-accent); }
 @keyframes pulse { 0% { opacity: .6 } 50% { opacity: .95 } 100% { opacity: .6 } }
 </style>
-
-

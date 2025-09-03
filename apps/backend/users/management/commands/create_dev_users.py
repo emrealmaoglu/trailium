@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
@@ -7,6 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         User = get_user_model()
+        avatar_base = os.getenv("DEMO_AVATAR_BASE", "https://i.pravatar.cc")
 
         # Admin user
         admin, created = User.objects.get_or_create(
@@ -14,7 +17,7 @@ class Command(BaseCommand):
             defaults={
                 "email": "admin@example.com",
                 "full_name": "Admin User",
-                "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+                "avatar": f"{avatar_base.rstrip('/')}/150?u=admin",
                 "about": "System Administrator",
             },
         )
@@ -31,7 +34,7 @@ class Command(BaseCommand):
             defaults={
                 "email": "emre@example.com",
                 "full_name": "Emre Almaoğlu",
-                "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+                "avatar": f"{avatar_base.rstrip('/')}/150?u=emre",
                 "about": "Full Stack Developer",
             },
         )
@@ -48,7 +51,7 @@ class Command(BaseCommand):
             defaults={
                 "email": "ayse@demo.trailium.com",
                 "full_name": "Ayşe Kara",
-                "avatar": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+                "avatar": f"{avatar_base.rstrip('/')}/150?u=ayse",
                 "about": "Marketing Specialist at N2Mobil",
                 "phone": "+90 533 245 7812",
                 "gender": "F",
@@ -65,7 +68,7 @@ class Command(BaseCommand):
             defaults={
                 "email": "mehmet@demo.trailium.com",
                 "full_name": "Mehmet Yılmaz",
-                "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+                "avatar": f"{avatar_base.rstrip('/')}/150?u=mehmet",
                 "about": "Software Engineer",
                 "phone": "+90 555 123 4567",
                 "gender": "M",

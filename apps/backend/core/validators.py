@@ -219,9 +219,7 @@ class SecurityValidator:
         if not html_content:
             return html_content
 
-        # Remove dangerous tags and attributes
-        allowed_tags = ["p", "br", "strong", "em", "u", "ol", "ul", "li", "blockquote"]
-        allowed_attributes = ["class"]
+        # Remove dangerous tags and attributes (document-only; see patterns below)
 
         # Basic HTML sanitization (use bleach library for production)
         for pattern in cls.XSS_PATTERNS:

@@ -1,35 +1,14 @@
-import os
-
 from django.contrib import admin
-from django.http import JsonResponse
 from django.urls import include, path
-from django.conf import settings
-from django.conf.urls.static import static
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-
-
-def health_check(request):
-    """Sağlık kontrolü (her zaman 200).
-
-    Returns
-    -------
-    JsonResponse
-        {"status": "ok"}
-    """
-    return JsonResponse({"status": "ok"}, status=200)
-
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("users.urls")),
-    path("api/", include("todos.urls")),
+    path("api/health/", TemplateView.as_view(template_name="health.html")),
+    path(
+        "api/", include("users.urls")
+    ),  # This will include both /api/users/ and /api/auth/
+    path("api/todos/", include("todos.urls")),
     path("api/", include("social.urls")),
-    path("health/", health_check, name="health_check"),
-    # OpenAPI schema and docs
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("api/admin-tools/", include("users.admin_urls")),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

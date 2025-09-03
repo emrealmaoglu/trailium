@@ -15,5 +15,3 @@ defineProps<{ comment: any }>()
 .author { font-size: 12px; color: var(--c-text-muted); }
 .body { font-size: 14px; }
 </style>
-
-

@@ -211,6 +211,28 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Deployment/Infrastructure (Local-only Policy)
+# This repository is local/demo-only; deployment is out of scope
+.env.production
+**/settings/production.py
+**/application-prod.yml
+docker-compose*.yml
+docker/
+compose/
+k8s/
+helm/
+charts/
+terraform/
+pulumi/
+cdk/
+skaffold/
+cloudbuild.*
+serverless.*
+Procfile
+vercel.json
+fly.toml
+render.yaml
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
@@ -325,3 +347,25 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Deployment/Infrastructure (Local-only Policy)
+# This repository is local/demo-only; deployment is out of scope
+.env.production
+**/settings/production.py
+**/application-prod.yml
+docker-compose*.yml
+docker/
+compose/
+k8s/
+helm/
+charts/
+terraform/
+pulumi/
+cdk/
+skaffold/
+cloudbuild.*
+serverless.*
+Procfile
+vercel.json
+fly.toml
+render.yaml
