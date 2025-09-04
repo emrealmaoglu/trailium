@@ -66,7 +66,8 @@ class Album(models.Model):
 class Photo(models.Model):
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name="photos")
     title = models.CharField(max_length=200, blank=True)
-    url = models.URLField()
+    image = models.ImageField(upload_to='photos/', blank=True, null=True)
+    url = models.URLField(blank=True)
     thumbnail_url = models.URLField(blank=True)
     metadata = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

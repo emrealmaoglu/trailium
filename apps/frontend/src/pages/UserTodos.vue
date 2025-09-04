@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { json } from '@/lib/http'
+import ErrorCard from '@/components/ui/ErrorCard.vue'
 
 const loading = ref(true)
 const errorMsg = ref('')
@@ -77,7 +78,13 @@ onMounted(() => {
     </div>
 
     <div v-if="loading" class="card" style="padding:16px;">Loading…</div>
-    <div v-else-if="errorMsg" class="card" style="padding:16px; color:var(--c-text-muted);">{{ errorMsg }}</div>
+    <ErrorCard
+      v-else-if="errorMsg"
+      title="Couldn't load todos"
+      :message="errorMsg"
+      :showRetry="true"
+      @retry="fetchLists"
+    />
     <template v-else>
       <div class="card" style="padding:12px; display:flex; gap:8px; align-items:center;">
         <label for="listSel" style="font-size:14px; color:var(--c-text-muted);">List:</label>

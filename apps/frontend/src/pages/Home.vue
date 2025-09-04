@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { json } from '@/lib/http'
+import { PAGE_SIZE_FEED } from '@/config/constants'
 
 const loading = ref(true)
 const items = ref([])
@@ -10,7 +11,7 @@ async function load() {
   loading.value = true
   errorMsg.value = ''
   try {
-    const data = await json('/api/feed/posts?page_size=6')
+    const data = await json(`/api/feed/posts?page_size=${PAGE_SIZE_FEED}`)
     items.value = data.results || []
   } catch {
     errorMsg.value = 'Unable to load followed users\' latest posts.'

@@ -64,6 +64,8 @@ class TodoItemSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
+    title = serializers.CharField(min_length=1, max_length=200, help_text="Todo title (1-200 characters)")
+    description = serializers.CharField(max_length=1000, required=False, allow_blank=True, help_text="Optional description (max 1000 characters)")
 
     class Meta:
         model = TodoItem
@@ -81,6 +83,11 @@ class TodoItemSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+    
+    def validate_title(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Todo title cannot be empty.")
+        return value.strip()
 
     def validate_list(self, tlist: TodoList):
         request = self.context.get("request")

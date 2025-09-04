@@ -5,6 +5,8 @@ import UserCard from '@/components/UserCard.vue'
 import UserCardSkeleton from '@/components/UserCardSkeleton.vue'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 import { useSessionStore } from '@/stores/session'
+import { PAGE_SIZE_USERS } from '@/config/constants'
+import ErrorCard from '@/components/ui/ErrorCard.vue'
 
 const loading = ref(true)
 const users = ref([])
@@ -148,7 +150,7 @@ const title = computed(() => 'All users')
     <Breadcrumbs />
 
     <div style="display:flex; align-items:center; gap:8px; margin:0 0 16px;">
-      <h2 style="margin:0; font-size:22px; font-weight:700;">Users</h2>
+      <h2 style="margin:0; font-size:22px; font-weight:700;">Users <span style="font-size:14px; color:var(--c-text-muted);">(Page size: {{ PAGE_SIZE_USERS }})</span></h2>
     </div>
 
     <!-- Filters Panel -->
@@ -169,10 +171,13 @@ const title = computed(() => 'All users')
     <div v-if="loading" class="grid grid-cols-responsive" style="gap:12px;">
       <UserCardSkeleton v-for="i in 8" :key="i" />
     </div>
-    <div v-else-if="errorMsg" class="card" style="padding:16px; color:var(--c-text-muted); display:flex; align-items:center; gap:12px;">
-      <span style="flex:1;">{{ errorMsg }}</span>
-      <button @click="fetchData()` + '`' + `" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:10px; padding:8px 12px; cursor:pointer; font-size:13px;">Retry</button>
-    </div>
+    <ErrorCard
+      v-else-if="errorMsg"
+      title="Couldn't load users"
+      :message="errorMsg"
+      :showRetry="true"
+      @retry="fetchData"
+    />
     <div v-else-if="filteredUsers.length === 0" class="card" style="padding:32px; text-align:center; color:var(--c-text-muted);">
       <div style="font-size:48px; margin-bottom:16px;">👥</div>
       <div style="font-size:18px; font-weight:600; margin-bottom:8px;">No users found</div>

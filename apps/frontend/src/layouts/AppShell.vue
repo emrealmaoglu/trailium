@@ -10,6 +10,7 @@ const showNotification = inject('showNotification')
 
 // Computed
 const isAdmin = computed(() => sessionStore.user?.is_superuser)
+const ADMIN_DEMO = String(import.meta.env.VITE_ENABLE_ADMIN_DEMO).toLowerCase() === 'true'
 </script>
 
 <template>
@@ -43,7 +44,7 @@ const isAdmin = computed(() => sessionStore.user?.is_superuser)
           </RouterLink>
 
           <!-- Admin Only Links (hidden unless env flag enabled) -->
-          <div v-if="isAdmin && import.meta.env.VITE_ENABLE_ADMIN_DEMO === 'true'" style="margin-top: 16px;">
+          <div v-if="isAdmin && ADMIN_DEMO" style="margin-top: 16px;">
             <div style="margin-bottom: 8px; padding: 8px 12px; background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca;">
               <div style="font-size: 12px; color: #991b1b; margin-bottom: 4px;">Admin Tools</div>
             </div>

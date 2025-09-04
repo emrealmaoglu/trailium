@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
+const ADMIN_DEMO = String(import.meta.env.VITE_ENABLE_ADMIN_DEMO).toLowerCase() === 'true'
 
 const routes = [
   {
@@ -61,12 +62,7 @@ const routes = [
     meta: { requiresAuth: true }
   },
   // AdminDanger route is optional for local demo; gated by env flag
-  ...(import.meta.env.VITE_ENABLE_ADMIN_DEMO === 'true' ? [{
-    path: '/admin-danger',
-    name: 'AdminDanger',
-    component: () => import('@/pages/AdminDanger.vue'),
-    meta: { requiresAuth: true, requiresAdmin: true }
-  }] : []),
+  // Route will be appended below using routes.push to keep base array clean
   {
     path: '/auth/login',
     name: 'Login',
@@ -85,6 +81,15 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 })
+
+if (ADMIN_DEMO) {
+  routes.push({
+    path: '/admin-danger',
+    name: 'AdminDanger',
+    component: () => import('@/pages/AdminDanger.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  })
+}
 
 router.beforeEach((to, from, next) => {
   const session = useSessionStore()

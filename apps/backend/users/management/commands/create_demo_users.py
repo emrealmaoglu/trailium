@@ -35,6 +35,14 @@ class Command(BaseCommand):
         clear_existing = options["clear"]
         create_admin = options["admin"]
 
+        # Read configurable rates from environment
+        premium_rate = float(os.getenv("DEMO_PREMIUM_RATE", "0.15"))
+        private_rate = float(os.getenv("DEMO_PRIVATE_RATE", "0.10"))
+
+        self.stdout.write(
+            f"Demo rates: Premium={premium_rate:.1%}, Private={private_rate:.1%}"
+        )
+
         if clear_existing:
             self.stdout.write("Clearing existing demo users...")
             User.objects.filter(is_staff=False).delete()
@@ -46,7 +54,7 @@ class Command(BaseCommand):
         self.stdout.write(f"Creating {count} demo users...")
 
         with transaction.atomic():
-            users = self.create_demo_users(count)
+            users = self.create_demo_users(count, premium_rate, private_rate)
             self.create_social_content(users)
             self.create_todos(users)
             self.create_follows(users)
@@ -78,7 +86,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write("Admin user already exists")
 
-    def create_demo_users(self, count):
+    def create_demo_users(self, count, premium_rate, private_rate):
         """Create demo users with Turkish names"""
         users = []
 
@@ -242,9 +250,9 @@ class Command(BaseCommand):
             ]
             about = random.choice(about_texts)
 
-            # Random premium and private status
-            is_premium = random.random() > 0.7  # 30% chance of being premium
-            is_private = random.random() > 0.8  # 20% chance of being private
+            # Random premium and private status using configurable rates
+            is_premium = random.random() < premium_rate
+            is_private = random.random() < private_rate
 
             # Create user
             user = User.objects.create_user(

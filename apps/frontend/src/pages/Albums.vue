@@ -1,6 +1,10 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, inject } from 'vue'
 import { json } from '@/lib/http'
+import { PAGE_SIZE_ALBUMS } from '@/config/constants'
+import ErrorCard from '@/components/ui/ErrorCard.vue'
+
+const showNotification = inject('showNotification')
 
 const loading = ref(true)
 const errorMsg = ref('')
@@ -12,6 +16,7 @@ const newTitle = ref('')
 const uploading = ref(false)
 const photoFile = ref(null)
 const photoTitle = ref('')
+const photoCaption = ref('')
 const showUploadForm = ref(false)
 
 async function fetchAlbums() {
@@ -51,27 +56,40 @@ async function createAlbum() {
 }
 
 async function uploadPhoto() {
-  if (!photoFile.value || !photoTitle.value.trim() || !activeAlbumId.value) return
+  if (!photoFile.value || !activeAlbumId.value) return
 
   uploading.value = true
   try {
     const formData = new FormData()
-    formData.append('title', photoTitle.value)
-    formData.append('album', activeAlbumId.value)
+    formData.append('title', photoTitle.value.trim() || '')
+    formData.append('caption', photoCaption.value.trim() || '')
     formData.append('image', photoFile.value)
 
-    await json(`/api/albums/${activeAlbumId.value}/photos/`, {
+    const response = await json(`/api/albums/${activeAlbumId.value}/photos/`, {
       method: 'POST',
       body: formData,
       headers: {} // Let browser set content-type for FormData
     })
 
+    // Add the new photo to the current album's photos
+    if (selectedAlbum.value) {
+      selectedAlbum.value.photos.unshift(response)
+    }
+
     photoTitle.value = ''
+    photoCaption.value = ''
     photoFile.value = null
     showUploadForm.value = false
-    await selectAlbum(activeAlbumId.value)
+    showNotification('Photo uploaded successfully!', 'success', 3000)
   } catch (e) {
-    errorMsg.value = 'Could not upload photo.'
+    console.error('Upload error:', e)
+    if (e.status === 413) {
+      showNotification('File too large. Maximum size is 5MB.', 'error', 5000)
+    } else if (e.status === 400) {
+      showNotification('Invalid file type. Please upload an image.', 'error', 5000)
+    } else {
+      showNotification('Failed to upload photo. Please try again.', 'error', 5000)
+    }
   } finally {
     uploading.value = false
   }
@@ -79,7 +97,15 @@ async function uploadPhoto() {
 
 function handleFileSelect(event) {
   const file = event.target.files[0]
-  if (file && file.type.startsWith('image/')) {
+  if (file) {
+    if (!file.type.startsWith('image/')) {
+      showNotification('Please select an image file.', 'error', 3000)
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      showNotification('File too large. Maximum size is 5MB.', 'error', 3000)
+      return
+    }
     photoFile.value = file
     if (!photoTitle.value) {
       photoTitle.value = file.name.replace(/\.[^/.]+$/, '') // Remove extension
@@ -98,7 +124,7 @@ onMounted(() => {
 <template>
   <div class="container">
     <div style="display:flex; align-items:center; gap:8px; margin:0 0 16px;">
-      <h2 style="margin:0; font-size:22px; font-weight:700;">Photo Albums</h2>
+      <h2 style="margin:0; font-size:22px; font-weight:700;">Photo Albums <span style="font-size:14px; color:var(--c-text-muted);">(Page size: {{ PAGE_SIZE_ALBUMS }})</span></h2>
       <button @click="fetchAlbums" style="margin-left:auto; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:10px; padding:8px 12px; cursor:pointer; font-size:13px;">Refresh</button>
     </div>
 
@@ -117,10 +143,13 @@ onMounted(() => {
       <div class="card" style="padding:16px; height:240px;"></div>
       <div class="card" style="padding:20px; min-height:400px;"></div>
     </div>
-    <div v-else-if="errorMsg" class="card" style="padding:16px; color:var(--c-text-muted); display:flex; align-items:center; gap:12px;">
-      <span style="flex:1;">{{ errorMsg }}</span>
-      <button @click="fetchAlbums" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:10px; padding:8px 12px; cursor:pointer; font-size:13px;">Retry</button>
-    </div>
+    <ErrorCard
+      v-else-if="errorMsg"
+      title="Couldn't load albums"
+      :message="errorMsg"
+      :showRetry="true"
+      @retry="fetchAlbums"
+    />
 
     <div v-else-if="albums.length === 0" class="card" style="padding:32px; text-align:center; color:var(--c-text-muted);">
       <div style="font-size:48px; margin-bottom:16px;">📸</div>
@@ -164,11 +193,16 @@ onMounted(() => {
             <form @submit.prevent="uploadPhoto" style="display:grid; gap:12px;">
               <div>
                 <label style="display:block; font-weight:500; margin-bottom:6px; font-size:13px;">Photo Title</label>
-                <input v-model="photoTitle" placeholder="Enter photo title" required style="width:100%; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:8px; padding:8px 10px; font-size:13px;" />
+                <input v-model="photoTitle" placeholder="Enter photo title" style="width:100%; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:8px; padding:8px 10px; font-size:13px;" />
               </div>
 
               <div>
-                <label style="display:block; font-weight:500; margin-bottom:6px; font-size:13px;">Select Image</label>
+                <label style="display:block; font-weight:500; margin-bottom:6px; font-size:13px;">Caption (optional)</label>
+                <textarea v-model="photoCaption" placeholder="Enter photo caption" rows="2" style="width:100%; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:8px; padding:8px 10px; font-size:13px; resize:vertical;"></textarea>
+              </div>
+
+              <div>
+                <label style="display:block; font-weight:500; margin-bottom:6px; font-size:13px;">Select Image (max 5MB)</label>
                 <input type="file" @change="handleFileSelect" accept="image/*" required style="width:100%; border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:8px; padding:8px 10px; font-size:13px;" />
               </div>
 

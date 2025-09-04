@@ -73,6 +73,14 @@
       Loading todos...
     </div>
 
+    <ErrorCard
+      v-else-if="errorMsg"
+      title="Couldn't load todos"
+      :message="errorMsg"
+      :showRetry="true"
+      @retry="fetchTodos"
+    />
+
     <div v-else-if="todos.length === 0" class="no-todos">
       <p>No todos yet. Create your first one!</p>
     </div>
@@ -196,21 +204,30 @@
       </div>
     </div>
   </div>
+  
+  <UndoBar v-if="undoActive" :label="undoLabel" :ttlMs="undoMs" @confirm="undoConfirm" @cancel="undoCancel" />
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { json } from '@/lib/http'
+import ErrorCard from '@/components/ui/ErrorCard.vue'
+import { useUndo } from '@/composables/useUndo'
+import UndoBar from '@/components/ui/UndoBar.vue'
 
 // State
 const todos = ref([])
 const loading = ref(true)
+const errorMsg = ref('')
 const showCreateForm = ref(false)
 const creating = ref(false)
 const updating = ref(false)
 const editingTodo = ref(null)
 const selectedListId = ref(null)
 const createError = ref('')
+
+// Undo system
+const { active: undoActive, label: undoLabel, remainingMs: undoMs, showUndo, cancel: undoCancel, dispose: undoDispose, confirm: undoConfirm } = useUndo()
 
 // New todo form
 const newTodo = ref({
@@ -224,6 +241,7 @@ const newTodo = ref({
 async function fetchTodos() {
   try {
     loading.value = true
+    errorMsg.value = ''
     const response = await json('/api/todos/items/')
     // Inject UI-only defaults (priority) to avoid undefined access in template
     todos.value = (response || []).map(t => ({
@@ -232,6 +250,7 @@ async function fetchTodos() {
     }))
   } catch (error) {
     console.error('Failed to fetch todos:', error)
+    errorMsg.value = 'Could not load todos. Please try again.'
   } finally {
     loading.value = false
   }
@@ -270,16 +289,55 @@ async function createTodo() {
       description: newTodo.value.description,
       due_date: newTodo.value.due_date || null
     }
+    
+    // Optimistic update
+    const tempId = Math.random()
+    const optimisticTodo = {
+      id: tempId,
+      list: selectedListId.value,
+      title: newTodo.value.title,
+      description: newTodo.value.description,
+      due_date: newTodo.value.due_date || null,
+      is_done: false,
+      priority: newTodo.value.priority || 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+    todos.value.unshift(optimisticTodo)
+    
     const response = await json('/api/todos/items/', {
       method: 'POST',
       body: JSON.stringify(payload)
     })
 
-    todos.value.unshift({ ...response, priority: newTodo.value.priority || 'medium' })
+    // Replace optimistic todo with real one
+    const index = todos.value.findIndex(t => t.id === tempId)
+    if (index !== -1) {
+      todos.value[index] = { ...response, priority: newTodo.value.priority || 'medium' }
+    }
+    
     resetForm()
     showCreateForm.value = false
+    
+    // Show Undo option
+    showUndo('Todo created — Undo?', async () => {
+      try {
+        await json(`/api/todos/items/${response.id}/`, { method: 'DELETE' })
+        const todoIndex = todos.value.findIndex(t => t.id === response.id)
+        if (todoIndex !== -1) {
+          todos.value.splice(todoIndex, 1)
+        }
+      } catch (e) {
+        console.error('Failed to delete todo:', e)
+      }
+    })
   } catch (error) {
     console.error('Failed to create todo:', error)
+    // Remove optimistic todo on error
+    const index = todos.value.findIndex(t => t.id === tempId)
+    if (index !== -1) {
+      todos.value.splice(index, 1)
+    }
     createError.value = 'Could not create todo. Please try again.'
   } finally {
     creating.value = false
@@ -367,6 +425,10 @@ function formatDate(dateString) {
 onMounted(async () => {
   await ensureDefaultList()
   await fetchTodos()
+})
+
+onBeforeUnmount(() => {
+  undoDispose()
 })
 </script>
 

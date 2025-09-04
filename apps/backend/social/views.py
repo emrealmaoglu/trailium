@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, Prefetch, Q
 from rest_framework import decorators, permissions, response, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -113,6 +114,7 @@ class PostViewSet(viewsets.ModelViewSet):
 class AlbumViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     serializer_class = AlbumSerializer
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get_queryset(self):
         user_id = self.request.query_params.get("user_id")
@@ -152,8 +154,8 @@ class AlbumViewSet(viewsets.ModelViewSet):
             )
         ser = PhotoCreateSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
-        Photo.objects.create(album=album, **ser.validated_data)
-        return response.Response(status=status.HTTP_201_CREATED)
+        photo = ser.save(album=album)
+        return response.Response(PhotoSerializer(photo).data, status=status.HTTP_201_CREATED)
 
 
 class FollowViewSet(viewsets.ModelViewSet):
@@ -264,6 +266,11 @@ class FeedPagination(PageNumberPagination):
     page_size = 5
 
 
+class MyPostsPagination(PageNumberPagination):
+    page_size_query_param = "page_size"
+    page_size = 10
+
+
 class FeedPosts(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -283,6 +290,26 @@ class FeedPosts(APIView):
             .order_by("-created_at")
         )
         paginator = FeedPagination()
+        page = paginator.paginate_queryset(qs, request)
+        ser = PostSerializer(page, many=True)
+        return paginator.get_paginated_response(ser.data)
+
+
+class MyPosts(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        qs = (
+            Post.objects.filter(user=request.user)
+            .select_related("user")
+            .prefetch_related("likes")
+            .annotate(
+                likes_count=Count("likes", distinct=True),
+                comments_count=Count("comments", distinct=True),
+            )
+            .order_by("-created_at")
+        )
+        paginator = MyPostsPagination()
         page = paginator.paginate_queryset(qs, request)
         ser = PostSerializer(page, many=True)
         return paginator.get_paginated_response(ser.data)

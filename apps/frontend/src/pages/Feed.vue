@@ -1,6 +1,10 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { json } from '@/lib/http'
+import { PAGE_SIZE_FEED } from '@/config/constants'
+import { useUndo } from '@/composables/useUndo'
+import UndoBar from '@/components/ui/UndoBar.vue'
+import ErrorCard from '@/components/ui/ErrorCard.vue'
 
 const loading = ref(true)
 const errorMsg = ref('')
@@ -8,6 +12,9 @@ const results = ref([])
 const next = ref('')
 const sentinel = ref(null)
 let observer
+
+// Shared undo system
+const { active: undoActive, label: undoLabel, remainingMs: undoMs, showUndo, cancel: undoCancel, dispose: undoDispose, confirm: undoConfirm } = useUndo()
 
 async function fetchFeed(url = '/api/feed/posts') {
   loading.value = true
@@ -39,6 +46,13 @@ async function toggleLike(post) {
   try {
     const method = likedBefore ? 'DELETE' : 'POST'
     await json(`/api/posts/${post.id}/like/`, { method })
+    showUndo(likedBefore ? 'Like removed — Undo?' : 'Like added — Undo?', async () => {
+      // revert the like back to original
+      const revertMethod = likedBefore ? 'POST' : 'DELETE'
+      post.likes_count = (post.likes_count || 0) - delta
+      post._liked = likedBefore
+      try { await json(`/api/posts/${post.id}/like/`, { method: revertMethod }) } catch {}
+    })
   } catch {
     // revert
     post.likes_count = (post.likes_count || 0) - delta
@@ -67,27 +81,33 @@ onMounted(() => {
 onUnmounted(() => {
   if (observer && sentinel.value) observer.unobserve(sentinel.value)
 })
+
+onBeforeUnmount(() => {
+  undoDispose()
+})
 </script>
 
 <template>
   <div class="container">
     <div style="display:flex; align-items:center; gap:8px; margin:0 0 16px;">
-      <h2 style="margin:0; font-size:22px; font-weight:700;">Your Feed</h2>
+      <h2 style="margin:0; font-size:22px; font-weight:700;">Your Feed <span style="font-size:14px; color:var(--c-text-muted);">(Page size: {{ PAGE_SIZE_FEED }})</span></h2>
       <div style="margin-left:auto; display:flex; align-items:center; gap:12px; color:var(--c-text-muted); font-size:13px;">
-        <span>Page size: 5</span>
         <button @click="fetchFeed()" style="border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:10px; padding:8px 12px; cursor:pointer; font-size:13px;">Refresh</button>
       </div>
     </div>
 
-    <div v-if="errorMsg" class="card" style="padding:16px; color:var(--c-text-muted); display:flex; align-items:center; gap:12px;">
-      <span style="flex:1;">{{ errorMsg }}</span>
-      <button @click="fetchFeed()" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:10px; padding:8px 12px; cursor:pointer; font-size:13px;">Retry</button>
-    </div>
+    <ErrorCard
+      v-if="errorMsg"
+      title="Couldn't load feed"
+      :message="errorMsg"
+      :showRetry="true"
+      @retry="fetchFeed"
+    />
 
     <div v-if="results.length === 0 && !loading" class="card" style="padding:32px; text-align:center; color:var(--c-text-muted);">
       <div style="font-size:48px; margin-bottom:16px;">📰</div>
-      <div style="font-size:18px; font-weight:600; margin-bottom:8px;">No posts in your feed</div>
-      <div>Follow some users to see their posts here!</div>
+      <div style="font-size:18px; font-weight:600; margin-bottom:8px;">Henüz takip ettiklerinden gönderi yok</div>
+      <div>Keşfet veya takip et.</div>
     </div>
 
     <div v-if="loading" class="grid grid-cols-responsive" style="gap:16px;">
@@ -150,4 +170,6 @@ onUnmounted(() => {
 
     <div ref="sentinel" style="height:1px;"></div>
   </div>
+
+  <UndoBar v-if="undoActive" :label="undoLabel" :ttlMs="undoMs" @confirm="undoConfirm" @cancel="undoCancel" />
 </template>

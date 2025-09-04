@@ -1,8 +1,12 @@
 <script setup>
-import { ref, onMounted, onUnmounted, inject } from 'vue'
+import { ref, onMounted, onUnmounted, inject, onBeforeUnmount } from 'vue'
 import { json } from '@/lib/http'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 import { useSessionStore } from '@/stores/session'
+import { useUndo } from '@/composables/useUndo'
+import UndoBar from '@/components/ui/UndoBar.vue'
+import { PAGE_SIZE_POSTS } from '@/config/constants'
+import ErrorCard from '@/components/ui/ErrorCard.vue'
 
 const loading = ref(true)
 const errorMsg = ref('')
@@ -26,17 +30,17 @@ const editingPost = ref(null)
 
 const showNotification = inject('showNotification')
 const session = useSessionStore()
+const { active: undoActive, label: undoLabel, remainingMs: undoMs, showUndo, cancel: undoCancel, dispose: undoDispose, confirm: undoConfirm } = useUndo()
 
-async function fetchPosts(url = '/api/posts/') {
+async function fetchPosts(url = '/api/my-posts') {
   loading.value = true
   errorMsg.value = ''
   try {
     const payload = await json(url)
     const newResults = payload.results || []
-    if (url === '/api/posts/') results.value = newResults
+    if (url === '/api/my-posts') results.value = newResults
     else results.value = results.value.concat(newResults)
     next.value = payload.next || ''
-    showNotification(`Loaded ${newResults.length} posts`, 'success', 3000)
   } catch (e) {
     errorMsg.value = 'Could not load posts.'
     showNotification('Failed to load posts', 'error', 5000)
@@ -64,9 +68,19 @@ async function addComment() {
   const body = commentBody.value
   commentBody.value = ''
   try {
-    comments.value.unshift({ id: Math.random(), user: { username: 'You' }, body, created_at: new Date().toISOString() })
-    await json(`/api/posts/${activePost.value.id}/comments/`, { method: 'POST', body: JSON.stringify({ body }) })
-    showNotification('Comment added successfully!', 'success', 3000)
+    const tempId = Math.random()
+    comments.value.unshift({ id: tempId, user: { username: 'You' }, body, created_at: new Date().toISOString() })
+    const created = await json(`/api/posts/${activePost.value.id}/comments/`, { method: 'POST', body: JSON.stringify({ body }) })
+    // Map tempId to real id
+    const idx = comments.value.findIndex(c => c.id === tempId)
+    if (idx !== -1) comments.value[idx].id = created.id
+    showUndo('Comment posted — Undo?', async () => {
+      // revert by deleting the created comment
+      const idToDelete = created?.id ?? tempId
+      try { await json(`/api/posts/${activePost.value.id}/comments/${idToDelete}/`, { method: 'DELETE' }) } catch {}
+      const i = comments.value.findIndex(c => c.id === idToDelete)
+      if (i !== -1) comments.value.splice(i, 1)
+    })
   } catch {
     // revert on error
     comments.value.shift()
@@ -85,7 +99,13 @@ async function toggleLike(post) {
   try {
     const method = likedBefore ? 'DELETE' : 'POST'
     await json(`/api/posts/${post.id}/like/`, { method })
-    showNotification(likedBefore ? 'Post unliked' : 'Post liked!', 'success', 2000)
+    showUndo(likedBefore ? 'Like removed — Undo?' : 'Like added — Undo?', async () => {
+      // revert the like back to original
+      const revertMethod = likedBefore ? 'POST' : 'DELETE'
+      post.likes_count = (post.likes_count || 0) - delta
+      post._liked = likedBefore
+      try { await json(`/api/posts/${post.id}/like/`, { method: revertMethod }) } catch {}
+    })
   } catch {
     // revert
     post.likes_count = (post.likes_count || 0) - delta
@@ -134,27 +154,64 @@ function clearNewPost() {
 }
 
 async function createPost() {
-  if (!newPostTitle.value.trim() || !newPostBody.value.trim()) return
+  if (!newPostBody.value.trim()) return
   creating.value = true
   try {
-    const formData = new FormData()
-    formData.append('title', newPostTitle.value)
-    formData.append('body', newPostBody.value)
+    const payload = {
+      title: newPostTitle.value.trim() || null,
+      body: newPostBody.value.trim(),
+      is_published: true,
+      visibility: 'public'
+    }
 
-    // Add photos if any
-    newPostPhotos.value.forEach((photo, index) => {
-      formData.append(`photos`, photo.file)
-    })
+    // Optimistic update
+    const tempId = Math.random()
+    const optimisticPost = {
+      id: tempId,
+      title: payload.title,
+      body: payload.body,
+      user: { id: session.user.id, username: session.user.username },
+      is_published: true,
+      visibility: 'public',
+      likes_count: 0,
+      comments_count: 0,
+      created_at: new Date().toISOString(),
+      _liked: false
+    }
+    results.value.unshift(optimisticPost)
 
     const post = await json('/api/posts/', {
       method: 'POST',
-      body: formData
+      body: JSON.stringify(payload)
     })
-    results.value.unshift(post)
+    
+    // Replace optimistic post with real one
+    const index = results.value.findIndex(p => p.id === tempId)
+    if (index !== -1) {
+      results.value[index] = post
+    }
+    
     clearNewPost()
     createModalOpen.value = false
-    showNotification('Post created successfully!', 'success', 4000)
+    
+    // Show Undo option
+    showUndo('Post created — Undo?', async () => {
+      try {
+        await json(`/api/posts/${post.id}/`, { method: 'DELETE' })
+        const postIndex = results.value.findIndex(p => p.id === post.id)
+        if (postIndex !== -1) {
+          results.value.splice(postIndex, 1)
+        }
+      } catch (e) {
+        console.error('Failed to delete post:', e)
+      }
+    })
   } catch (e) {
+    // Remove optimistic post on error
+    const index = results.value.findIndex(p => p.id === tempId)
+    if (index !== -1) {
+      results.value.splice(index, 1)
+    }
     errorMsg.value = 'Could not create post.'
     showNotification('Failed to create post', 'error', 5000)
   } finally {
@@ -213,6 +270,10 @@ onMounted(() => {
   document.addEventListener('visibilitychange', onVis)
   onUnmounted(() => document.removeEventListener('visibilitychange', onVis))
 })
+
+onBeforeUnmount(() => {
+  undoDispose()
+})
 </script>
 
 <template>
@@ -220,9 +281,8 @@ onMounted(() => {
     <Breadcrumbs />
 
     <div style="display:flex; align-items:center; gap:8px; margin:0 0 16px;">
-      <h2 style="margin:0; font-size:22px; font-weight:700;">Posts</h2>
+      <h2 style="margin:0; font-size:22px; font-weight:700;">Posts <span style="font-size:14px; color:var(--c-text-muted);">(Page size: {{ PAGE_SIZE_POSTS }})</span></h2>
       <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
-        <span style="color:var(--c-text-muted); font-size:13px;">Page size: 10</span>
         <button @click="createModalOpen = true" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:10px; padding:8px 16px; cursor:pointer; font-size:13px; font-weight:500;">Create Post</button>
         <button @click="fetchPosts()" style="border:1px solid var(--c-border); background:var(--c-surface); color:var(--c-text); border-radius:10px; padding:8px 12px; cursor:pointer; font-size:13px;">Refresh</button>
       </div>
@@ -243,10 +303,13 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div v-else-if="errorMsg" class="card" style="padding:16px; color:var(--c-text-muted); display:flex; align-items:center; gap:12px;">
-      <span style="flex:1;">{{ errorMsg }}</span>
-      <button @click="fetchPosts()" style="border:1px solid var(--c-accent); background:var(--c-accent); color:white; border-radius:10px; padding:8px 12px; cursor:pointer; font-size:13px;">Retry</button>
-    </div>
+    <ErrorCard
+      v-else-if="errorMsg"
+      title="Couldn't load posts"
+      :message="errorMsg"
+      :showRetry="true"
+      @retry="fetchPosts"
+    />
     <div v-else-if="results.length === 0" class="card" style="padding:32px; text-align:center; color:var(--c-text-muted);">
       <div style="font-size:48px; margin-bottom:16px;">📝</div>
       <div style="font-size:18px; font-weight:600; margin-bottom:8px;">No posts yet</div>
@@ -434,4 +497,6 @@ onMounted(() => {
       </div>
     </div>
   </div>
+
+  <UndoBar v-if="undoActive" :label="undoLabel" :ttlMs="undoMs" @confirm="undoConfirm" @cancel="undoCancel" />
 </template>
