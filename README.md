@@ -1,8 +1,6 @@
-# Trailium — Local-Only Demo
+# Trailium — 
 
-## Local-only Policy
 
-This repository is **local/demo-only**. Deployment and infrastructure artifacts are blocked by default.
 
 ### Pre-commit Guard
 - **Automatic blocking**: Git pre-commit hook prevents adding deployment/infra files
@@ -12,7 +10,7 @@ This repository is **local/demo-only**. Deployment and infrastructure artifacts 
 
 ### Scope
 - ✅ Local development, demo scenarios, UI/UX improvements
-- ❌ Production deployment, CI/CD, infrastructure as code
+
 
 ## Quickstart (3 minutes)
 1. Clone: `git clone https://github.com/emrealmaoglu/trailium.git && cd trailium`
